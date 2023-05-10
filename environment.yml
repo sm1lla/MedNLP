@@ -1,0 +1,17 @@
+# run: conda env create -n <name> --file environment.yml
+channels:
+  - pytorch
+#  - nvidia
+  - defaults
+dependencies:
+  - python=3.9
+  - nvidia::cudatoolkit=11.7
+  - pytorch::pytorch=2.0.0
+  - transformers 
+  - datasets
+  - typer
+  - scikit-learn
+  - matplotlib
+  - pip
+  - pip:
+  
