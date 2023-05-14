@@ -8,17 +8,15 @@ import torch
 from .dataset import create_dataset
 
 
-def tokenize(dataset, labels):
+def tokenize(dataset, labels, tokenizer):
     encoded_dataset = dataset.map(
-        preprocess_data, batched=True, remove_columns=dataset["train"].column_names
+        lambda x: preprocess_data(x, labels, tokenizer), batched=True, remove_columns=dataset["train"].column_names
     )
     encoded_dataset.set_format("torch")
     return encoded_dataset
 
 
-def preprocess_data(examples, labels):
-    tokenizer = AutoTokenizer.from_pretrained("bert-base-uncased")
-
+def preprocess_data(examples, labels, tokenizer):
     # take a batch of texts
     text = examples["text"]
     # encode them
@@ -71,7 +69,9 @@ def train():
     id2label = {idx: label for idx, label in enumerate(labels)}
     label2id = {label: idx for idx, label in enumerate(labels)}
 
-    encoded_dataset = tokenize(dataset, labels)
+    tokenizer = AutoTokenizer.from_pretrained("bert-base-uncased")
+
+    encoded_dataset = tokenize(dataset, labels, tokenizer)
 
     model = AutoModelForSequenceClassification.from_pretrained(
         "bert-base-german-dbmdz-uncased",
