@@ -32,3 +32,10 @@ def train():
     from .train import train
 
     train()
+
+
+@cli.command()
+def infer(text: str, path: str):
+    from .inference import infer
+
+    infer(text, path)
