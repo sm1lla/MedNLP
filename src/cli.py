@@ -19,12 +19,16 @@ def test():
 def main(output_file_name):
     pass
 
+
 @cli.command()
 def dataset():
     from .dataset import examine_dataset
+
     examine_dataset()
+
 
 @cli.command()
 def train():
     from .train import train
+
     train()
