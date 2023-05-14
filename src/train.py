@@ -1,3 +1,5 @@
+from datetime import datetime
+
 import numpy as np
 import torch
 from sklearn.metrics import accuracy_score, f1_score, roc_auc_score
@@ -91,18 +93,20 @@ def train():
     batch_size = 8
     metric_name = "f1"
 
+    output_dir = f"output/checkpoints/{datetime.now().strftime('%y%m%d_%H:%M:%S')}"
+
     args = TrainingArguments(
-        f"bert-finetuned-sem_eval-german",
+        output_dir,
         evaluation_strategy="epoch",
         save_strategy="epoch",
         learning_rate=2e-5,
         per_device_train_batch_size=batch_size,
         per_device_eval_batch_size=batch_size,
-        num_train_epochs=5,
+        num_train_epochs=1,
         weight_decay=0.01,
         load_best_model_at_end=True,
         metric_for_best_model=metric_name,
-        # push_to_hub=True,
+        save_total_limit=1,
     )
 
     trainer = Trainer(
