@@ -1,16 +1,22 @@
-from transformers import AutoModelForSequenceClassification
-from transformers import AutoTokenizer
 import numpy as np
-from transformers import TrainingArguments, Trainer
-from sklearn.metrics import f1_score, roc_auc_score, accuracy_score
-from transformers import EvalPrediction
 import torch
+from sklearn.metrics import accuracy_score, f1_score, roc_auc_score
+from transformers import (
+    AutoModelForSequenceClassification,
+    AutoTokenizer,
+    EvalPrediction,
+    Trainer,
+    TrainingArguments,
+)
+
 from .dataset import create_dataset
 
 
 def tokenize(dataset, labels, tokenizer):
     encoded_dataset = dataset.map(
-        lambda x: preprocess_data(x, labels, tokenizer), batched=True, remove_columns=dataset["train"].column_names
+        lambda x: preprocess_data(x, labels, tokenizer),
+        batched=True,
+        remove_columns=dataset["train"].column_names,
     )
     encoded_dataset.set_format("torch")
     return encoded_dataset
@@ -69,12 +75,12 @@ def train():
     id2label = {idx: label for idx, label in enumerate(labels)}
     label2id = {label: idx for idx, label in enumerate(labels)}
 
-    tokenizer = AutoTokenizer.from_pretrained("bert-base-uncased")
+    tokenizer = AutoTokenizer.from_pretrained("deepset/gbert-base")
 
     encoded_dataset = tokenize(dataset, labels, tokenizer)
 
     model = AutoModelForSequenceClassification.from_pretrained(
-        "bert-base-german-dbmdz-uncased",
+        "deepset/gbert-base",
         problem_type="multi_label_classification",
         num_labels=len(labels),
         id2label=id2label,

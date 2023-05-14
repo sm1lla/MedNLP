@@ -12,6 +12,8 @@ dependencies:
   - typer
   - scikit-learn
   - matplotlib
+  - black
+  - isort
   - pip
   - pip:
   
