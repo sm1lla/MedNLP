@@ -9,5 +9,3 @@ from .train import train
 @hydra.main(config_path="config", config_name="config")
 def cli(cfg: DictConfig):
     options = {"train": train, "infer": infer, "dataset": examine_dataset}
-
-    options[cfg.task.name](cfg)
