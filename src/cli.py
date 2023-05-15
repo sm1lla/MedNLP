@@ -1,41 +1,13 @@
-import typer
+import hydra
+from omegaconf import DictConfig
 
-cli = typer.Typer(name="TODO: find name")
-
-
-@cli.command()
-def moin():
-    print("moin")
+from .dataset import examine_dataset
+from .inference import infer
+from .train import train
 
 
-@cli.command()
-def test():
-    from .train import train
+@hydra.main(config_path="config", config_name="config")
+def cli(cfg: DictConfig):
+    options = {"train": train, "infer": infer, "dataset": examine_dataset}
 
-    train()
-
-
-@cli.command()
-def main(output_file_name):
-    pass
-
-
-@cli.command()
-def dataset():
-    from .dataset import examine_dataset
-
-    examine_dataset()
-
-
-@cli.command()
-def train():
-    from .train import train
-
-    train()
-
-
-@cli.command()
-def infer(text: str, path: str):
-    from .inference import infer
-
-    infer(text, path)
+    options[cfg.task.name](cfg)
