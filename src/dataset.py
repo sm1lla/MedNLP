@@ -50,8 +50,8 @@ def create_dataset(test_size: float = 0.2):
     test = pd.concat([stratified_test, unstratified_test])
 
     # clean them
-    train = train.drop(["label_tuple", "tuple_count"], axis=1)[:100]
-    test = test.drop(["label_tuple", "tuple_count"], axis=1)[:10]
+    train = train.drop(["label_tuple", "tuple_count"], axis=1)
+    test = test.drop(["label_tuple", "tuple_count"], axis=1)
 
     # change back to dataset class
     dataset = DatasetDict(
