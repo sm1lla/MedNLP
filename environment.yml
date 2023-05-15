@@ -1,18 +1,24 @@
 # run: conda env create -n <name> --file environment.yml
+#conda env update --file environment.yml  --prune 
 channels:
   - pytorch
-#  - nvidia
+  - nvidia
+  - anaconda
+  - conda-forge
   - defaults
 dependencies:
   - python=3.9
+  - pytorch=2.0.0
   - nvidia::cudatoolkit=11.7
-  - pytorch::pytorch=2.0.0
-  - transformers 
-  - datasets
-  - scikit-learn
-  - matplotlib
+  - conda-forge::transformers 
+  - conda-forge::datasets
+  - anaconda::pandas 
+  - anaconda::scikit-learn
+  - conda-forge::matplotlib
+  - conda-forge::accelerate
   - black
   - isort
+  - conda-forge::hydra-core
   - pip
   - pip:
   
