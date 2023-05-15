@@ -12,7 +12,7 @@ def create_dataset(test_size: float = 0.2):
     # load data
     dataset = load_dataset(
         "csv",
-        data_files=to_absolute_path("data/ntcir17_mednlp-sc_sm_de_train_03_04_23.csv"),
+        data_files=to_absolute_path("data/ntcir17_mednlp-sc_sm_de_train_08_05_23.csv"),
         split="train",
     )
     pd_dataset = pd.DataFrame(dataset)
@@ -36,10 +36,13 @@ def create_dataset(test_size: float = 0.2):
     stratified_train, stratified_test = train_test_split(
         pd_dataset_stratify,
         test_size=test_size,
+        random_state=42, 
         stratify=pd_dataset_stratify[["label_tuple"]],
     )
     unstratified_train, unstratified_test = train_test_split(
-        pd_dataset_no_stratify, test_size=test_size
+        pd_dataset_no_stratify,
+        random_state=42, 
+        test_size=test_size
     )
 
     # combine them
@@ -47,8 +50,8 @@ def create_dataset(test_size: float = 0.2):
     test = pd.concat([stratified_test, unstratified_test])
 
     # clean them
-    train = train.drop(["label_tuple", "tuple_count"], axis=1)
-    test = test.drop(["label_tuple", "tuple_count"], axis=1)
+    train = train.drop(["label_tuple", "tuple_count"], axis=1)[:100]
+    test = test.drop(["label_tuple", "tuple_count"], axis=1)[:10]
 
     # change back to dataset class
     dataset = DatasetDict(
