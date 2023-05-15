@@ -9,7 +9,6 @@ dependencies:
   - pytorch::pytorch=2.0.0
   - transformers 
   - datasets
-  - typer
   - scikit-learn
   - matplotlib
   - black
