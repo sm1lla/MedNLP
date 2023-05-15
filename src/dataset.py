@@ -1,6 +1,6 @@
 import matplotlib.pyplot as plt
 import pandas as pd
-from datasets import load_data
+from datasets import load_dataset, DatasetDict
 from sklearn.model_selection import train_test_split
 from hydra.utils import to_absolute_path
 from omegaconf import DictConfig
@@ -9,7 +9,7 @@ def create_dataset(test_size: float  = 0.2):
     #load data
     dataset = load_dataset(
         "csv",
-        data_files="data/ntcir17_mednlp-sc_sm_de_train_08_05_23.csv",
+        data_files= to_absolute_path("data/ntcir17_mednlp-sc_sm_de_train_08_05_23.csv"),
         split="train",
     )
     pd_dataset = pd.DataFrame(dataset)
@@ -21,10 +21,10 @@ def create_dataset(test_size: float  = 0.2):
     #split data in wether possible for stratified split or not 
     counts = pd_dataset["label_tuple"].value_counts().to_dict()
     pd_dataset["tuple_count"] = pd_dataset["label_tuple"].apply(lambda x: counts[x])
-    pd_dataset_stratify = pd_dataset[pd_dataset["tuple_count"]>1]
+    pd_dataset_stratify = pd_dataset[pd_dataset["tuple_count"]!=1]
     
-    pd_dataset_no_stratify = pd_dataset[pd_dataset["tuple_count"]<=1]
-    
+    pd_dataset_no_stratify = pd_dataset[pd_dataset["tuple_count"]==1]
+
     #split them
     stratified_train, stratified_test = train_test_split(pd_dataset_stratify, test_size=test_size, stratify=pd_dataset_stratify[["label_tuple"]])
     unstratified_train, unstratified_test = train_test_split(pd_dataset_no_stratify, test_size=test_size)
@@ -36,7 +36,15 @@ def create_dataset(test_size: float  = 0.2):
     #clean them 
     train = train.drop(["label_tuple", "tuple_count"], axis=1)
     test = test.drop(["label_tuple", "tuple_count"], axis=1)
-    return train, test
+
+    #change back to dataset class 
+    dataset = DatasetDict({
+    "train": dataset.from_pandas(train),
+    "test": dataset.from_pandas(test)
+    })
+
+    dataset = dataset.remove_columns(["__index_level_0__"])
+    return dataset
 
 
 def count_class_occurences(train_set: pd.DataFrame, test_set: pd.DataFrame):
@@ -72,10 +80,17 @@ def pie_chart_distibution(dataset_sums: pd.DataFrame):
 
 
 
-def examine_dataset():
-    train_df, test_df = create_dataset(test_size=0.2)
+def examine_dataset(cfg: DictConfig):
+    
+    dataset = create_dataset(test_size=0.2)
 
-    print(train_df)
+    # Create dataframes for train and test set
+    train = dataset["train"]
+    test = dataset["test"]
+    train_df = pd.DataFrame(train)
+    test_df = pd.DataFrame(test)
+    print(f'training data size  = {len(train_df)}')
+    print(f'test data size  = {len(test_df)}')
     dataset_sums = count_class_occurences(train_df, test_df)
 
     print(train_df[:100])
