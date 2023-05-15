@@ -87,10 +87,8 @@ def class_distribution(dataset_sums: pd.DataFrame):
 
 
 def pie_chart_distibution(dataset_sums: pd.DataFrame):
-    dataset_sums["train"].plot.pie(legend=False, ylabel="", figsize=(17, 14))
-    plt.savefig(
-        f"{os.getcwd()}/pie_chart.png", format="png", dpi=1200, transparent=True
-    )
+    dataset_sums.plot.pie(subplots=True, legend=False, ylabel="", figsize=(17, 14))
+    plt.savefig(f"{os.getcwd()}/pie_chart.png", format="png", dpi=1200)
 
 
 def examine_dataset(cfg: DictConfig):
