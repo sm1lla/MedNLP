@@ -105,6 +105,7 @@ def train(cfg: DictConfig):
         load_best_model_at_end=cfg.load_best_model_at_end,
         metric_for_best_model=cfg.metric_for_best_model,
         save_total_limit=cfg.save_total_limit,
+        report_to="wandb",
     )
 
     trainer = Trainer(
