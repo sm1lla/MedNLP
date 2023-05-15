@@ -26,6 +26,11 @@ def dataset():
 
     examine_dataset()
 
+@cli.command()
+def plot_tuple_dist():
+    from .dataset import plot_tuple_distribution
+
+    plot_tuple_distribution()
 
 @cli.command()
 def train():
