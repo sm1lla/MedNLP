@@ -1,12 +1,14 @@
 import matplotlib.pyplot as plt
 import pandas as pd
 from datasets import load_dataset
+from hydra.utils import to_absolute_path
+from omegaconf import DictConfig
 
 
 def create_dataset(test_size: float):
     dataset = load_dataset(
         "csv",
-        data_files="data/ntcir17_mednlp-sc_sm_de_train_03_04_23.csv",
+        data_files=to_absolute_path("data/ntcir17_mednlp-sc_sm_de_train_03_04_23.csv"),
         split="train",
     )
     dataset = dataset.train_test_split(test_size=test_size, shuffle=False)
@@ -42,10 +44,10 @@ def class_distribution(dataset_sums: pd.DataFrame):
 
 def pie_chart_distibution(dataset_sums: pd.DataFrame):
     dataset_sums.plot.pie(subplots=True, legend=False, ylabel="", figsize=(17, 14))
-    plt.savefig("output/pie_chart.png")
+    plt.savefig("")
 
 
-def examine_dataset():
+def examine_dataset(cfg: DictConfig):
     dataset = create_dataset(test_size=0.2)
 
     # Create dataframes for train and test set
