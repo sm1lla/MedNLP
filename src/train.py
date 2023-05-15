@@ -1,7 +1,10 @@
+import os
 from datetime import datetime
 
+import hydra
 import numpy as np
 import torch
+from omegaconf import DictConfig
 from sklearn.metrics import accuracy_score, f1_score, roc_auc_score
 from transformers import (
     AutoModelForSequenceClassification,
@@ -43,6 +46,7 @@ def preprocess_data(examples, labels, tokenizer):
 
 
 # source: https://jesusleal.io/2021/04/21/Longformer-multilabel-classification/
+# TODO : get access to cfg to use threshold value from there
 def multi_label_metrics(predictions, labels, threshold=0.5):
     # first, apply sigmoid on predictions which are of shape (batch_size, num_labels)
     sigmoid = torch.nn.Sigmoid()
@@ -66,7 +70,7 @@ def compute_metrics(p: EvalPrediction):
     return result
 
 
-def train():
+def train(cfg: DictConfig):
     dataset = create_dataset(test_size=0.2)
 
     labels = [
@@ -89,24 +93,19 @@ def train():
         label2id=label2id,
     )
 
-    # TODO: move hyperparamers to config file (with Hydra)
-    batch_size = 8
-    metric_name = "f1"
-
-    output_dir = f"output/checkpoints/{datetime.now().strftime('%y%m%d_%H:%M:%S')}"
-
     args = TrainingArguments(
-        output_dir,
-        evaluation_strategy="epoch",
-        save_strategy="epoch",
-        learning_rate=2e-5,
-        per_device_train_batch_size=batch_size,
-        per_device_eval_batch_size=batch_size,
-        num_train_epochs=1,
-        weight_decay=0.01,
-        load_best_model_at_end=True,
-        metric_for_best_model=metric_name,
-        save_total_limit=1,
+        os.getcwd(),
+        evaluation_strategy=cfg.evaluation_strategy,
+        save_strategy=cfg.save_strategy,
+        learning_rate=cfg.learning_rate,
+        per_device_train_batch_size=cfg.batch_size,
+        per_device_eval_batch_size=cfg.batch_size,
+        num_train_epochs=cfg.num_train_epochs,
+        weight_decay=cfg.weight_decay,
+        load_best_model_at_end=cfg.load_best_model_at_end,
+        metric_for_best_model=cfg.metric_for_best_model,
+        save_total_limit=cfg.save_total_limit,
+        report_to="wandb",
     )
 
     trainer = Trainer(

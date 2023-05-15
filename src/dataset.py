@@ -1,7 +1,9 @@
 import matplotlib.pyplot as plt
 import pandas as pd
-from datasets import load_dataset
+from datasets import load_data
 from sklearn.model_selection import train_test_split
+from hydra.utils import to_absolute_path
+from omegaconf import DictConfig
 
 def create_dataset(test_size: float  = 0.2):
     #load data
@@ -66,7 +68,8 @@ def class_distribution(dataset_sums: pd.DataFrame):
 
 def pie_chart_distibution(dataset_sums: pd.DataFrame):
     dataset_sums.plot.pie(subplots=True, legend=False, ylabel="", figsize=(17, 14))
-    plt.savefig("output/pie_chart.png")
+    plt.savefig("")
+
 
 
 def examine_dataset():
