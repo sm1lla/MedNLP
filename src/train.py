@@ -15,6 +15,7 @@ from transformers import (
 )
 
 from .dataset import create_dataset
+from .metrics import all_symptoms_metric, each_symptoms_metric, two_way_metric
 
 
 def tokenize(dataset, labels, tokenizer):
@@ -60,7 +61,8 @@ def multi_label_metrics(predictions, labels, threshold=0.5):
     roc_auc = roc_auc_score(y_true, y_pred, average="micro")
     accuracy = accuracy_score(y_true, y_pred)
     # return as dictionary
-    metrics = {"f1": f1_micro_average, "roc_auc": roc_auc, "accuracy": accuracy}
+    metrics = {"f1": f1_micro_average, "roc_auc": roc_auc, "accuracy": accuracy ,
+               "all_symptoms_metric":all_symptoms_metric(y_pred,y_true), "each_symptoms_metric": each_symptoms_metric(y_pred,y_true),"two_way_metric": two_way_metric(y_pred,y_true)}
     return metrics
 
 
