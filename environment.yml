@@ -10,15 +10,15 @@ dependencies:
   - python=3.9
   - pytorch=2.0.0
   - nvidia::cudatoolkit=11.7
-  - conda-forge::transformers 
-  - conda-forge::datasets
-  - anaconda::pandas 
-  - anaconda::scikit-learn
-  - conda-forge::matplotlib
+  - conda-forge::transformers=4.28.1
+  - conda-forge::datasets=2.12.0
+  - pandas=2.0.1
+  - anaconda::scikit-learn=1.2.0
+  - conda-forge::matplotlib=3.7.1
   - conda-forge::accelerate
-  - black
-  - isort
-  - conda-forge::hydra-core
+  - black=23.3.0
+  - isort=5.12.0
+  - conda-forge::hydra-core=1.3.2
   - pip
   - pip:
   
