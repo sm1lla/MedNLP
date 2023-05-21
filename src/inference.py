@@ -4,7 +4,6 @@ import numpy as np
 import torch
 from omegaconf import DictConfig
 from transformers import AutoModelForSequenceClassification, AutoTokenizer
-
 from .dataset import create_dataset
 
 
@@ -77,8 +76,10 @@ def infer(cfg: DictConfig):
     )
 
     encoding = tokenizer(cfg.task.text, return_tensors="pt")
+    print(encoding.items())
     encoding = {k: v.to(model.device) for k, v in encoding.items()}
     outputs = model(**encoding)
 
     predicted_labels = get_predicted_classes(outputs, id2label, cfg.threshold)
     print(predicted_labels)
+
