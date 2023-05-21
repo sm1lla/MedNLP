@@ -1,0 +1,4 @@
+# @package _group_
+name : "evaluate"
+
+model_path : "/dhc/home/martin.preiss/MedNLP/outputs/2023-05-15/22-59-29/checkpoint-7173"
