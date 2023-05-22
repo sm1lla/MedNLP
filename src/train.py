@@ -5,12 +5,7 @@ import hydra
 import numpy as np
 import torch
 from omegaconf import DictConfig
-from sklearn.metrics import (
-    accuracy_score,
-    classification_report,
-    f1_score,
-    roc_auc_score,
-)
+from sklearn.metrics import accuracy_score, classification_report, f1_score
 from transformers import (
     AutoModelForSequenceClassification,
     AutoTokenizer,
@@ -21,7 +16,7 @@ from transformers import (
 
 from .dataset import create_dataset
 from .inference import get_class_labels
-from .metrics import all_symptoms_metric, each_symptoms_metric, two_way_metric
+from .metrics import all_symptoms_metric, two_way_metric
 
 
 def tokenize(dataset, labels, tokenizer):
@@ -64,7 +59,6 @@ def multi_label_metrics(predictions, labels, threshold=0.5):
     # finally, compute metrics
     y_true = labels
     f1_macro_average = f1_score(y_true=y_true, y_pred=y_pred, average="macro")
-    roc_auc = roc_auc_score(y_true, y_pred, average="micro")
     accuracy = accuracy_score(y_true, y_pred)
     # return as dictionary
     metrics = {
