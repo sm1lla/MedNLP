@@ -68,8 +68,11 @@ def multi_label_metrics(predictions, labels, threshold=0.5):
         "two_way_metric": two_way_metric(y_pred, y_true),
     }
     sklearn_metrics = classification_report(
-        y_pred, y_true, target_names=get_class_labels(), output_dict=True
+        y_pred=y_pred, y_true=y_true, target_names=get_class_labels(), output_dict=True
     )
+    print(classification_report(
+        y_pred=y_pred, y_true=y_true, target_names=get_class_labels()
+    ))
 
     metrics.update(sklearn_metrics)
 
