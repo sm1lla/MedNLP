@@ -4,34 +4,35 @@ import numpy as np
 import torch
 from omegaconf import DictConfig
 from transformers import AutoModelForSequenceClassification, AutoTokenizer
+
 from .dataset import create_dataset
 
 
 def get_class_labels(use_cached: bool = True):
     if use_cached:
         return [
-            "C0027497:Übelkeit",
-            "C0011991:Diarrhöe",
-            "C0015672:Erschöpfung",
-            "C0042963:Erbrechen",
-            "C0003123:Anorexie",
-            "C0018681:Kopfschmerzen",
-            "C0015967:Fieber",
-            "C0206062:Interstitielle Lungenerkrankung",
-            "C0023895:Leberschädigung",
-            "C0012833:Drehschwindel",
-            "C0030193:Schmerz",
-            "C0002170:Alopezie",
-            "C0004096:Analgetisches Asthma-Syndrom",
-            "C0022658:Nierenerkrankung",
-            "C0020517:Hypersensibilität",
-            "C0917801:Insomnie",
-            "C0009806:Constipation",
-            "C0005956:Knochenmarkerkrankung",
-            "C0000737:Bauchschmerzen",
-            "C0010692:Hämorrhagische Zystitis",
-            "C0015230:Ausschlag",
-            "C0149745:Stomatitis",
+            "nausea",
+            "diarrhea",
+            "fatigue",
+            "vomiting",
+            "loss of appetite",
+            "headache",
+            "fever",
+            "interstitial lung disease",
+            "liver damage",
+            "dizziness",
+            "pain",
+            "alopecia",
+            "analgesic asthma syndrome",
+            "renal impairment",
+            "hypersensitivity",
+            "insomnia",
+            "constipation",
+            "bone marrow dysfunction",
+            "abdominal pain",
+            "hemorrhagic cystitis",
+            "rash",
+            "stomatitis",
             "other",
         ]
     else:
@@ -82,4 +83,3 @@ def infer(cfg: DictConfig):
 
     predicted_labels = get_predicted_classes(outputs, id2label, cfg.threshold)
     print(predicted_labels)
-
