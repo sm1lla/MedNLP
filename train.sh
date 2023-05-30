@@ -12,5 +12,4 @@ set +eu
 conda activate mednlp
 set +eu
 
-
-wandb agent mednlp/MedNLP/irejz2g6
+wandb agent mednlp/MedNLP/77j94i1e
