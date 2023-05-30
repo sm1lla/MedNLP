@@ -3,7 +3,7 @@ project: MedNLP
 method: bayes
 metric:
   goal: maximize
-  name: eval/f1-score
+  name: eval/f1
 parameters:
   task:
     values: [train]
