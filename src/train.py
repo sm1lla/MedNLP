@@ -70,9 +70,6 @@ def multi_label_metrics(predictions, labels, threshold=0.5):
     sklearn_metrics = classification_report(
         y_pred=y_pred, y_true=y_true, target_names=get_class_labels(), output_dict=True
     )
-    print(classification_report(
-        y_pred=y_pred, y_true=y_true, target_names=get_class_labels()
-    ))
 
     metrics.update(sklearn_metrics)
 
@@ -121,6 +118,7 @@ def train(cfg: DictConfig):
         metric_for_best_model=cfg.metric_for_best_model,
         save_total_limit=cfg.save_total_limit,
         report_to="wandb",
+        fp16=cfg.fp16,
     )
 
     trainer = Trainer(

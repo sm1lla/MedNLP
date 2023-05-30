@@ -12,8 +12,20 @@ parameters:
     min: 1e-5
     max: 1e-3
   weight_decay: 
-    max: 0.1 
     min: 0.01
+    max: 0.1 
+  batch_size:
+    distribution: int_uniform
+    min: 3
+    max: 15
+  fp16:
+    values: [True, False] 
+  threshold:
+    values: [0.4, 0.5, 0.6, 0.7]
+  num_train_epochs:
+    distribution: int_uniform
+    min: 4
+    max: 15
 
 command:
   - ${env}
