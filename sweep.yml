@@ -1,0 +1,22 @@
+program: src
+project: MedNLP
+method: bayes
+metric:
+  goal: maximize
+  name: eval/f1-score
+parameters:
+  task:
+    values: [train]
+  learning_rate:
+    distribution: log_uniform_values
+    min: 1e-5
+    max: 1e-3
+  weight_decay: 
+    max: 0.1 
+    min: 0.01
+
+command:
+  - ${env}
+  - python
+  - ${program}
+  - ${args_no_hyphens}

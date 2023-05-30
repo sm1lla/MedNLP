@@ -135,3 +135,8 @@ dmypy.json
 data/
 output/
 outputs/
+*.out
+wandb/
+
+# VSCode Setting
+.vscode
