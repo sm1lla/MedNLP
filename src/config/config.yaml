@@ -1,7 +1,9 @@
 defaults:
   - task: ???
   - dataset: mednlp-de
-
+#wandb args  
+project_name: huggingface 
+run_name: None
 # Training Arguments
 batch_size: 8
 evaluation_strategy: "epoch"
@@ -16,6 +18,7 @@ fp16: False
 
 # Model
 pretrained_model: "deepset/gbert-base"
+#pretrained_model: "cl-tohoku/bert-base-japanese-whole-word-masking"
 
 # Inference
 threshold: 0.5
