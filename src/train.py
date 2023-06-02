@@ -83,7 +83,7 @@ def compute_metrics(p: EvalPrediction):
 
 
 def train(cfg: DictConfig):
-    dataset = create_dataset(test_size=0.2)
+    dataset = create_dataset(cfg,test_size=0.2)
 
     labels = [
         label
@@ -93,12 +93,12 @@ def train(cfg: DictConfig):
     id2label = {idx: label for idx, label in enumerate(labels)}
     label2id = {label: idx for idx, label in enumerate(labels)}
 
-    tokenizer = AutoTokenizer.from_pretrained("deepset/gbert-base")
+    tokenizer = AutoTokenizer.from_pretrained(cfg.pretrained_model)
 
     encoded_dataset = tokenize(dataset, labels, tokenizer)
 
     model = AutoModelForSequenceClassification.from_pretrained(
-        "deepset/gbert-base",
+        cfg.pretrained_model,
         problem_type="multi_label_classification",
         num_labels=len(labels),
         id2label=id2label,
