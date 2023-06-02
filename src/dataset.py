@@ -8,11 +8,11 @@ from omegaconf import DictConfig
 from sklearn.model_selection import train_test_split
 
 
-def create_dataset(test_size: float = 0.2):
+def create_dataset(cfg: DictConfig, test_size: float = 0.2):
     # load data
     dataset = load_dataset(
         "csv",
-        data_files=to_absolute_path("data/ntcir17_mednlp-sc_sm_de_train_08_05_23.csv"),
+        data_files=cfg.dataset.path,
         split="train",
     )
     pd_dataset = pd.DataFrame(dataset)
