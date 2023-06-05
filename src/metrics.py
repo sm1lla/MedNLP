@@ -1,4 +1,43 @@
 import numpy as np
+import torch
+from sklearn.metrics import accuracy_score, classification_report, f1_score
+from transformers import EvalPrediction
+
+from .helpers import get_class_labels
+
+
+# source: https://jesusleal.io/2021/04/21/Longformer-multilabel-classification/
+def multi_label_metrics(predictions, labels, threshold=0.5):
+    # first, apply sigmoid on predictions which are of shape (batch_size, num_labels)
+    sigmoid = torch.nn.Sigmoid()
+    probs = sigmoid(torch.Tensor(predictions))
+    # next, use threshold to turn them into integer predictions
+    y_pred = np.zeros(probs.shape)
+    y_pred[np.where(probs >= threshold)] = 1
+    # finally, compute metrics
+    y_true = labels
+    f1_macro_average = f1_score(y_true=y_true, y_pred=y_pred, average="macro")
+    accuracy = accuracy_score(y_true, y_pred)
+    # return as dictionary
+    metrics = {
+        "f1": f1_macro_average,
+        "accuracy": accuracy,
+        "all_symptoms_metric": all_symptoms_metric(y_pred, y_true),
+        "two_way_metric": two_way_metric(y_pred, y_true),
+    }
+    sklearn_metrics = classification_report(
+        y_pred=y_pred, y_true=y_true, target_names=get_class_labels(), output_dict=True
+    )
+
+    metrics.update(sklearn_metrics)
+
+    return metrics
+
+
+def compute_metrics(p: EvalPrediction):
+    preds = p.predictions[0] if isinstance(p.predictions, tuple) else p.predictions
+    result = multi_label_metrics(predictions=preds, labels=p.label_ids)
+    return result
 
 
 def all_symptoms_metric(y_pred, y_true):
