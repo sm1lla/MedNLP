@@ -2,7 +2,10 @@ import os
 
 import matplotlib.pyplot as plt
 import pandas as pd
+
 from datasets import Dataset, DatasetDict, load_dataset
+import numpy as np
+
 from omegaconf import DictConfig
 from sklearn.model_selection import train_test_split
 from sklearn.utils import resample, shuffle
@@ -143,8 +146,8 @@ def pie_chart_distibution(dataset_sums: pd.DataFrame):
 
 
 def examine_dataset(cfg: DictConfig):
-    dataset = create_dataset(cfg.dataste.path, test_size=0.2)
 
+    dataset = create_dataset(cfg.dataset.path, test_size=0.2)
     # Create dataframes for train and test set
     train = dataset["train"]
     test = dataset["test"]
@@ -201,3 +204,28 @@ def plot_tuple_distribution():
     tuples_size_counts.plot.pie()
     tuples_size_counts.to_csv("output/tuple_size_counts.csv")
     plt.savefig("output/tuple_size_counts.png")
+
+def print_examples_for_classnames(cfg: DictConfig):
+
+    columnnames=["C0020517:Hypersensibilität"]
+    
+    dataset = create_dataset(cfg.dataset.path, test_size=0.2)
+    # Create dataframes for train and test set
+    train = dataset["train"]
+    test = dataset["test"]
+    train_df = pd.DataFrame(train)
+    test_df = pd.DataFrame(test)
+
+    #create boolean mask
+    train_mask = pd.Series([True]*len(train_df))
+    test_mask = pd.Series([True]*len(test_df))
+    for column in columnnames:
+        train_mask = train_df[column]==1 & train_mask
+        test_mask  = test_df[column]==1 & test_mask
+    
+    text = list(train_df[train_mask]["text"])
+    text.extend(list(test_df[test_mask]["text"]))
+    
+    for element in text:
+        print(element)
+        print()

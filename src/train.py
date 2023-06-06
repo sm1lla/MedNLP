@@ -13,6 +13,7 @@ from .dataset import create_dataset, downsample, upsample
 from .helpers import get_class_labels
 from .metrics import compute_metrics
 from .preprocessing import tokenize
+from .utils import configure_wandb
 
 
 def initialize_trainer(cfg: DictConfig):
@@ -60,7 +61,8 @@ def initialize_trainer(cfg: DictConfig):
 
 
 def train(cfg: DictConfig):
-    dataset = create_dataset(cfg.dataset.path, test_size=0.2)
+    configure_wandb(cfg)
+    dataset = create_dataset(cfg.dataset.path, test_size=0.2) 
 
     if cfg.upsample:
         dataset["train"] = upsample(dataset["train"])
@@ -75,12 +77,12 @@ def train(cfg: DictConfig):
     id2label = {idx: label for idx, label in enumerate(labels)}
     label2id = {label: idx for idx, label in enumerate(labels)}
 
-    tokenizer = AutoTokenizer.from_pretrained(cfg.pretrained_model)
+    tokenizer = AutoTokenizer.from_pretrained(cfg.dataset.pretrained_model)
 
     encoded_dataset = tokenize(dataset, labels, tokenizer)
 
     model = AutoModelForSequenceClassification.from_pretrained(
-        cfg.pretrained_model,
+        cfg.dataset.pretrained_model,
         problem_type="multi_label_classification",
         num_labels=len(labels),
         id2label=id2label,
