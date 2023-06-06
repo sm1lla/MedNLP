@@ -1,4 +1,4 @@
 # @package _group_
-name : "infer"
-text : "Ich nehme seit einer Woche Aspirin und seitdem ist mir dauernd übel"
+name : "predict"
+
 model_path : "/dhc/home/smilla.fox/MedNLP/outputs/2023-05-30/19-38-53/checkpoint-5928"

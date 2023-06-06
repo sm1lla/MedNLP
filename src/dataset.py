@@ -3,16 +3,15 @@ import os
 import matplotlib.pyplot as plt
 import pandas as pd
 from datasets import DatasetDict, load_dataset
-from hydra.utils import to_absolute_path
 from omegaconf import DictConfig
 from sklearn.model_selection import train_test_split
 
 
-def create_dataset(cfg: DictConfig, test_size: float = 0.2):
+def create_dataset(dataset_path: str, test_size: float = 0.2):
     # load data
     dataset = load_dataset(
         "csv",
-        data_files=cfg.dataset.path,
+        data_files=dataset_path,
         split="train",
     )
     pd_dataset = pd.DataFrame(dataset)
@@ -36,13 +35,11 @@ def create_dataset(cfg: DictConfig, test_size: float = 0.2):
     stratified_train, stratified_test = train_test_split(
         pd_dataset_stratify,
         test_size=test_size,
-        random_state=42, 
+        random_state=42,
         stratify=pd_dataset_stratify[["label_tuple"]],
     )
     unstratified_train, unstratified_test = train_test_split(
-        pd_dataset_no_stratify,
-        random_state=42, 
-        test_size=test_size
+        pd_dataset_no_stratify, random_state=42, test_size=test_size
     )
 
     # combine them
@@ -95,7 +92,9 @@ def pie_chart_distibution(dataset_sums: pd.DataFrame):
 
 
 def examine_dataset(cfg: DictConfig):
-    dataset = create_dataset(cfg, test_size=0.2)
+
+    dataset = create_dataset(cfg.dataset.path, test_size=0.2)
+
 
     # Create dataframes for train and test set
     train = dataset["train"]
