@@ -21,4 +21,5 @@ dependencies:
   - conda-forge::hydra-core=1.3.2
   - pip
   - pip:
-  
+    -fugashi[unidic-lite]
+    -fugashi[unidic]
