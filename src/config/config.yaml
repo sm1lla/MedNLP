@@ -16,8 +16,9 @@ metric_for_best_model: "f1"
 save_total_limit: 1
 fp16: False
 
-# Model
-
-
 # Inference
 threshold: 0.7
+
+hydra:
+  run:
+    dir: /dhc/groups/appl_ml_ss23_1/hydra_outputs
