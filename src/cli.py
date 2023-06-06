@@ -1,7 +1,7 @@
 import hydra
 from omegaconf import DictConfig
 
-from .dataset import examine_dataset
+from .dataset import examine_dataset, print_examples_for_classnames
 from .evaluate import evaluate_model
 from .inference import infer
 from .predict import predict
@@ -16,6 +16,7 @@ def cli(cfg: DictConfig):
         "predict": predict,
         "dataset": examine_dataset,
         "evaluate": evaluate_model,
+        "examples": print_examples_for_classnames
     }
 
     options[cfg.task.name](cfg)
