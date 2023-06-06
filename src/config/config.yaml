@@ -22,3 +22,7 @@ pretrained_model: "deepset/gbert-base"
 
 # Inference
 threshold: 0.7
+
+# Dataset
+upsample: False
+downsample: True

@@ -2,9 +2,10 @@ import os
 
 import matplotlib.pyplot as plt
 import pandas as pd
-from datasets import DatasetDict, load_dataset
+from datasets import Dataset, DatasetDict, load_dataset
 from omegaconf import DictConfig
 from sklearn.model_selection import train_test_split
+from sklearn.utils import resample, shuffle
 
 
 def create_dataset(dataset_path: str, test_size: float = 0.2):
@@ -57,6 +58,56 @@ def create_dataset(dataset_path: str, test_size: float = 0.2):
 
     dataset = dataset.remove_columns(["__index_level_0__"])
     return dataset
+
+
+def upsample(dataset: Dataset):
+    dataset = dataset.to_pandas()
+    classes = minority_classes(dataset)
+    dataset_extension = pd.DataFrame(columns=dataset.columns)
+    num_samples = 50
+    for minority_class in classes:
+        count = 0
+        while count <= num_samples:
+            for row in dataset[dataset[minority_class] == 1].iterrows():
+                if count > num_samples:
+                    break
+                else:
+                    dataset_extension = pd.concat(
+                        [dataset_extension, pd.DataFrame([row[1]])], ignore_index=True
+                    )
+                    count += 1
+
+    updated_dataset = pd.concat([dataset, dataset_extension], ignore_index=True)
+    shuffle(updated_dataset, random_state=42)
+    return Dataset.from_pandas(updated_dataset)
+
+
+def downsample(dataset: Dataset):
+    dataset = dataset.to_pandas()
+    classes = majority_classes(dataset)
+    for majority_class in classes:
+        subset = dataset[dataset[majority_class] == 1]
+        new_subset = resample(subset, replace=False, n_samples=300, random_state=42)
+        dataset.drop(subset.index, inplace=True)
+
+        dataset = pd.concat([dataset, new_subset], ignore_index=True)
+
+    shuffle(dataset, random_state=42)
+    return Dataset.from_pandas(dataset)
+
+
+def majority_classes(dataset):
+    counts = dataset.iloc[:, 2:].sum()
+    classes = list(counts[counts > 300][counts < 800].index)
+
+    return classes
+
+
+def minority_classes(dataset):
+    counts = dataset.iloc[:, 2:].sum()
+    classes = list(counts[counts < 50].index)
+
+    return classes
 
 
 def count_class_occurences(train_set: pd.DataFrame, test_set: pd.DataFrame):
