@@ -6,7 +6,6 @@ from .evaluate import evaluate_model
 from .inference import infer
 from .predict import predict
 from .train import train
-from .utils import configure_wandb
 
 
 @hydra.main(config_path="config", config_name="config")
