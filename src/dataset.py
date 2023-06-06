@@ -95,7 +95,7 @@ def pie_chart_distibution(dataset_sums: pd.DataFrame):
 
 
 def examine_dataset(cfg: DictConfig):
-    dataset = create_dataset(test_size=0.2)
+    dataset = create_dataset(cfg, test_size=0.2)
 
     # Create dataframes for train and test set
     train = dataset["train"]

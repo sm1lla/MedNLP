@@ -17,7 +17,7 @@ from transformers import (
 from .dataset import create_dataset
 from .inference import get_class_labels
 from .metrics import all_symptoms_metric, two_way_metric
-
+from .utils import configure_wandb
 
 def tokenize(dataset, labels, tokenizer):
     encoded_dataset = dataset.map(
@@ -33,7 +33,8 @@ def preprocess_data(examples, labels, tokenizer):
     # take a batch of texts
     text = examples["text"]
     # encode them
-    encoding = tokenizer(text, padding="max_length", truncation=True, max_length=128)
+    encoding = tokenizer(text, padding="longest")
+    
     # add labels
     labels_batch = {k: examples[k] for k in examples.keys() if k in labels}
     # create numpy array of shape (batch_size, num_labels)
@@ -83,6 +84,9 @@ def compute_metrics(p: EvalPrediction):
 
 
 def train(cfg: DictConfig):
+    
+    configure_wandb(cfg)
+
     dataset = create_dataset(cfg,test_size=0.2)
 
     labels = [
@@ -93,12 +97,12 @@ def train(cfg: DictConfig):
     id2label = {idx: label for idx, label in enumerate(labels)}
     label2id = {label: idx for idx, label in enumerate(labels)}
 
-    tokenizer = AutoTokenizer.from_pretrained(cfg.pretrained_model)
+    tokenizer = AutoTokenizer.from_pretrained(cfg.dataset.pretrained_model)
 
     encoded_dataset = tokenize(dataset, labels, tokenizer)
 
     model = AutoModelForSequenceClassification.from_pretrained(
-        cfg.pretrained_model,
+        cfg.dataset.pretrained_model,
         problem_type="multi_label_classification",
         num_labels=len(labels),
         id2label=id2label,

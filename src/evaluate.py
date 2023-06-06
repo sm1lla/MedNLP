@@ -13,9 +13,11 @@ from transformers import (
     Trainer,
     TrainingArguments,
 )
+from .utils import configure_wandb
 
 def evaluate_model(cfg: DictConfig):
-
+    
+    configure_wandb(cfg)
     #do it with trainer 
     dataset = create_dataset()
     labels = get_class_labels(use_cached=False)

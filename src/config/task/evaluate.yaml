@@ -1,4 +1,4 @@
 # @package _group_
 name : "evaluate"
 
-model_path : "/dhc/home/martin.preiss/MedNLP/outputs/2023-05-15/22-59-29/checkpoint-7173"
+model_path : "/dhc/groups/appl_ml_ss23_1/hydra_outputs/2023-05-22/16-04-01/checkpoint-7173"

@@ -2,3 +2,4 @@
 
 name: mednlp-fr
 path: /dhc/groups/appl_ml_ss23_1/datasets/ntcir17_mednlp-sc_sm_fr_train_08_05_23.csv
+pretrained_model: dbmdz/bert-base-french-europeana-cased
