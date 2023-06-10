@@ -9,7 +9,7 @@ from transformers import (
     TrainingArguments,
 )
 
-from .dataset import create_dataset, downsample, upsample
+from .dataset import add_generated_samples, create_dataset, downsample, upsample
 from .helpers import get_class_labels
 from .metrics import compute_metrics
 from .preprocessing import tokenize
@@ -62,12 +62,14 @@ def initialize_trainer(cfg: DictConfig):
 
 def train(cfg: DictConfig):
     configure_wandb(cfg)
-    dataset = create_dataset(cfg.dataset.path, test_size=0.2) 
+    dataset = create_dataset(cfg.dataset.path, test_size=0.2)
 
     if cfg.upsample:
         dataset["train"] = upsample(dataset["train"])
     if cfg.downsample:
         dataset["train"] = downsample(dataset["train"])
+    if cfg.augmentation:
+        dataset["train"] = add_generated_samples(dataset["train"])
 
     labels = [
         label
