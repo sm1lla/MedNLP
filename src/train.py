@@ -98,6 +98,7 @@ def train(cfg: DictConfig):
         save_total_limit=cfg.save_total_limit,
         report_to="wandb",
         fp16=cfg.fp16,
+        label_smoothing_factor=cfg.label_smoothing_factor
     )
 
     trainer = Trainer(

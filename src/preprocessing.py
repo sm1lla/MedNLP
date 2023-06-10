@@ -15,7 +15,7 @@ def preprocess_data(examples, labels, tokenizer):
     # take a batch of texts
     text = examples["text"]
     # encode them
-    encoding = tokenizer(text, padding="max_length", truncation=True, max_length=128)
+    encoding = tokenizer(text, padding="longest", truncation=True)
     # add labels
     labels_batch = {k: examples[k] for k in examples.keys() if k in labels}
     # create numpy array of shape (batch_size, num_labels)
