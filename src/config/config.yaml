@@ -2,7 +2,7 @@ defaults:
   - task: ???
   - dataset: mednlp-de
 #wandb args  
-project_name: huggingface 
+project_name: MedNLP 
 run_name: None
 # Training Arguments
 batch_size: 12 
@@ -13,13 +13,19 @@ num_train_epochs: 15
 weight_decay: 0.15
 load_best_model_at_end: True
 metric_for_best_model: "f1"
-save_total_limit: 1
-fp16: False
+save_total_limit: 2
+fp16: True
 label_smoothing_factor: 0.0
 
 # Inference
 threshold: 0.7
 
+
+# Dataset
+upsample: False
+downsample: False
+
+# Hydra
 hydra:
   run:
-    dir: /dhc/groups/appl_ml_ss23_1/hydra_outputs
+    dir: /dhc/groups/appl_ml_ss23_1/hydra_outputs/${now:%Y-%m-%d}/${now:%H-%M-%S}
