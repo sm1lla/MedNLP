@@ -1,11 +1,10 @@
 import os
 
 import matplotlib.pyplot as plt
-import pandas as pd
-
-from datasets import Dataset, DatasetDict, load_dataset
 import numpy as np
-
+import pandas as pd
+from datasets import Dataset, DatasetDict, load_dataset
+from hydra.utils import get_original_cwd
 from omegaconf import DictConfig
 from sklearn.model_selection import train_test_split
 from sklearn.utils import resample, shuffle
@@ -146,7 +145,6 @@ def pie_chart_distibution(dataset_sums: pd.DataFrame):
 
 
 def examine_dataset(cfg: DictConfig):
-
     dataset = create_dataset(cfg.dataset.path, test_size=0.2)
     # Create dataframes for train and test set
     train = dataset["train"]
@@ -205,10 +203,10 @@ def plot_tuple_distribution():
     tuples_size_counts.to_csv("output/tuple_size_counts.csv")
     plt.savefig("output/tuple_size_counts.png")
 
-def print_examples_for_classnames(cfg: DictConfig):
 
-    columnnames=["C0020517:Hypersensibilität"]
-    
+def print_examples_for_classnames(cfg: DictConfig):
+    columnnames = ["C0020517:Hypersensibilität"]
+
     dataset = create_dataset(cfg.dataset.path, test_size=0.2)
     # Create dataframes for train and test set
     train = dataset["train"]
@@ -216,16 +214,37 @@ def print_examples_for_classnames(cfg: DictConfig):
     train_df = pd.DataFrame(train)
     test_df = pd.DataFrame(test)
 
-    #create boolean mask
-    train_mask = pd.Series([True]*len(train_df))
-    test_mask = pd.Series([True]*len(test_df))
+    # create boolean mask
+    train_mask = pd.Series([True] * len(train_df))
+    test_mask = pd.Series([True] * len(test_df))
     for column in columnnames:
-        train_mask = train_df[column]==1 & train_mask
-        test_mask  = test_df[column]==1 & test_mask
-    
+        train_mask = train_df[column] == 1 & train_mask
+        test_mask = test_df[column] == 1 & test_mask
+
     text = list(train_df[train_mask]["text"])
     text.extend(list(test_df[test_mask]["text"]))
-    
+
     for element in text:
         print(element)
         print()
+
+
+def add_generated_samples(dataset):
+    dataset = dataset.to_pandas()
+    dataset_generated = pd.read_csv(
+        f"{get_original_cwd()}/data/generated_tweets_pain_de.csv"
+    )
+    rows_generated = len(dataset_generated)
+    for column in dataset.columns:
+        if column == dataset.columns[12]:
+            dataset_generated[column] = np.ones(rows_generated, dtype=int)
+        elif column == "train_id":
+            dataset_generated.insert(
+                0, "train_id", np.zeros(rows_generated, dtype=float)
+            )
+        elif column != "text":
+            dataset_generated[column] = np.zeros(rows_generated, dtype=int)
+
+    updated_dataset = pd.concat([dataset, dataset_generated], ignore_index=True)
+    shuffle(updated_dataset, random_state=42)
+    return Dataset.from_pandas(updated_dataset)
