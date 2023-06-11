@@ -205,7 +205,7 @@ def plot_tuple_distribution():
 
 
 def print_examples_for_classnames(cfg: DictConfig):
-    columnnames = ["C0020517:Hypersensibilität"]
+    columnnames = [cfg.task.symptom]
 
     dataset = create_dataset(cfg.dataset.path, test_size=0.2)
     # Create dataframes for train and test set
