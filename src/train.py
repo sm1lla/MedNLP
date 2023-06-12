@@ -9,7 +9,8 @@ from transformers import (
     TrainingArguments,
 )
 
-from .dataset import add_generated_samples, create_dataset, downsample, upsample
+from .augmentation import add_generated_samples
+from .dataset import create_dataset, downsample, upsample
 from .helpers import get_class_labels
 from .metrics import compute_metrics
 from .preprocessing import tokenize
@@ -22,7 +23,7 @@ def initialize_trainer(cfg: DictConfig):
     id2label = {idx: label for idx, label in enumerate(labels)}
     label2id = {label: idx for idx, label in enumerate(labels)}
 
-    tokenizer = tokenizer = AutoTokenizer.from_pretrained(Path(cfg.task.model_path))
+    tokenizer = AutoTokenizer.from_pretrained(Path(cfg.task.model_path))
 
     model = AutoModelForSequenceClassification.from_pretrained(
         Path(cfg.task.model_path),
@@ -68,8 +69,13 @@ def train(cfg: DictConfig):
         dataset["train"] = upsample(dataset["train"])
     if cfg.downsample:
         dataset["train"] = downsample(dataset["train"])
-    if cfg.augmentation:
-        dataset["train"] = add_generated_samples(dataset["train"])
+    if cfg.augmentation.use:
+        dataset["train"] = add_generated_samples(
+            dataset["train"],
+            cfg.augmentation.generated_classes_indices,
+            cfg.augmentation.generated_samples_path,
+            cfg.dataset.name.split("-")[1],
+        )
 
     labels = [
         label
