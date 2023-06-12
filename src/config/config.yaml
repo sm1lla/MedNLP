@@ -19,11 +19,15 @@ fp16: True
 # Inference
 threshold: 0.8
 
-
 # Dataset
 upsample: False
 downsample: False
-augmentation: False
+
+# Dataset
+augmentation:
+  use: True
+  generated_classes_indices: [12, 16]
+  generated_samples_path: data/generated/
 
 # Hydra
 hydra:

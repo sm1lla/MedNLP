@@ -1,10 +1,8 @@
 import os
 
 import matplotlib.pyplot as plt
-import numpy as np
 import pandas as pd
 from datasets import Dataset, DatasetDict, load_dataset
-from hydra.utils import get_original_cwd
 from omegaconf import DictConfig
 from sklearn.model_selection import train_test_split
 from sklearn.utils import resample, shuffle
@@ -227,24 +225,3 @@ def print_examples_for_classnames(cfg: DictConfig):
     for element in text:
         print(element)
         print()
-
-
-def add_generated_samples(dataset):
-    dataset = dataset.to_pandas()
-    dataset_generated = pd.read_csv(
-        f"{get_original_cwd()}/data/generated_tweets_pain_de.csv"
-    )
-    rows_generated = len(dataset_generated)
-    for column in dataset.columns:
-        if column == dataset.columns[12]:
-            dataset_generated[column] = np.ones(rows_generated, dtype=int)
-        elif column == "train_id":
-            dataset_generated.insert(
-                0, "train_id", np.zeros(rows_generated, dtype=float)
-            )
-        elif column != "text":
-            dataset_generated[column] = np.zeros(rows_generated, dtype=int)
-
-    updated_dataset = pd.concat([dataset, dataset_generated], ignore_index=True)
-    shuffle(updated_dataset, random_state=42)
-    return Dataset.from_pandas(updated_dataset)
