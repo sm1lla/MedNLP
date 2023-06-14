@@ -16,7 +16,7 @@ from .preprocessing import tokenize
 from .utils import configure_wandb
 
 
-def initialize_trainer(cfg: DictConfig,use_test:bool = False):
+def initialize_trainer(cfg: DictConfig, use_test: bool = False):
     dataset = create_dataset(cfg.dataset.path)
     labels = get_class_labels(dataset)
     id2label = {idx: label for idx, label in enumerate(labels)}
@@ -52,7 +52,7 @@ def initialize_trainer(cfg: DictConfig,use_test:bool = False):
         model,
         args,
         train_dataset=encoded_dataset["train"],
-        eval_dataset=encoded_dataset["val"if not use_test else "test"],
+        eval_dataset=encoded_dataset["val" if not use_test else "test"],
         tokenizer=tokenizer,
         compute_metrics=compute_metrics,
     )
@@ -62,7 +62,7 @@ def initialize_trainer(cfg: DictConfig,use_test:bool = False):
 
 def train(cfg: DictConfig):
     configure_wandb(cfg)
-    dataset = create_dataset(cfg.dataset.path, test_size=0.2) 
+    dataset = create_dataset(cfg.dataset.path, test_size=0.2)
 
     if cfg.upsample:
         dataset["train"] = upsample(dataset["train"])
@@ -103,7 +103,7 @@ def train(cfg: DictConfig):
         save_total_limit=cfg.save_total_limit,
         report_to="wandb",
         fp16=cfg.fp16,
-        label_smoothing_factor=cfg.label_smoothing_factor
+        label_smoothing_factor=cfg.label_smoothing_factor,
     )
 
     trainer = Trainer(
@@ -116,4 +116,4 @@ def train(cfg: DictConfig):
     )
 
     trainer.train()
-    trainer.evaluate(encoded_dataset["test"])
+    trainer.evaluate(encoded_dataset["val"])
