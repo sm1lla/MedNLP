@@ -11,7 +11,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.utils import resample, shuffle
 
 
-def create_dataset(dataset_path: str, test_size: float = 0.2):
+def create_dataset(dataset_path: str, val_size:float = 0.15 , test_size: float = 0.15):
     # load data
     dataset = load_dataset(
         "csv",
@@ -32,31 +32,56 @@ def create_dataset(dataset_path: str, test_size: float = 0.2):
     counts = pd_dataset["label_tuple"].value_counts().to_dict()
     pd_dataset["tuple_count"] = pd_dataset["label_tuple"].apply(lambda x: counts[x])
     pd_dataset_stratify = pd_dataset[pd_dataset["tuple_count"] != 1]
+    
 
     pd_dataset_no_stratify = pd_dataset[pd_dataset["tuple_count"] == 1]
 
     # split them
-    stratified_train, stratified_test = train_test_split(
+    stratified_train, stratified_tmp = train_test_split(
         pd_dataset_stratify,
-        test_size=test_size,
+        test_size=val_size + test_size,
         random_state=42,
         stratify=pd_dataset_stratify[["label_tuple"]],
     )
-    unstratified_train, unstratified_test = train_test_split(
-        pd_dataset_no_stratify, random_state=42, test_size=test_size
+    unstratified_train, unstratified_tmp = train_test_split(
+        pd_dataset_no_stratify, random_state=42, test_size=val_size + test_size
     )
+
+    #create val and test 
+    #first count them to know which can be stratified
+    counts = stratified_tmp["label_tuple"].value_counts().to_dict()
+    stratified_tmp["tuple_count"] = stratified_tmp["label_tuple"].apply(lambda x: counts[x])
+
+    unstratified_tmp = pd.concat([unstratified_tmp,stratified_tmp[stratified_tmp["tuple_count"] == 1]], ignore_index=True) 
+
+    stratified_tmp = stratified_tmp[stratified_tmp["tuple_count"] != 1]
+    
+    #split tmp into val test
+
+    stratified_val, stratified_test = train_test_split(
+        stratified_tmp,
+        test_size=test_size/(val_size+test_size),
+        random_state=42,
+        stratify=stratified_tmp[["label_tuple"]],
+    )
+    unstratified_val, unstratified_test = train_test_split(
+        unstratified_tmp, random_state=42, test_size=test_size/(val_size+test_size)
+    )
+
 
     # combine them
     train = pd.concat([stratified_train, unstratified_train])
+    val = pd.concat([stratified_val, unstratified_val])
     test = pd.concat([stratified_test, unstratified_test])
 
     # clean them
     train = train.drop(["label_tuple", "tuple_count"], axis=1)
+    val = val.drop(["label_tuple", "tuple_count"], axis=1)
     test = test.drop(["label_tuple", "tuple_count"], axis=1)
 
     # change back to dataset class
     dataset = DatasetDict(
-        {"train": dataset.from_pandas(train), "test": dataset.from_pandas(test)}
+        {"train": dataset.from_pandas(train),"val": dataset.from_pandas(val) ,"test": dataset.from_pandas(test)}
     )
 
     dataset = dataset.remove_columns(["__index_level_0__"])
@@ -112,19 +137,25 @@ def minority_classes(dataset):
 
     return classes
 
+def sum_df(df: pd.DataFrame):
+    #helper function for count_class_occurences
+    sums = df.drop(["train_id", "text"], axis=1)
+    sums.rename(
+        columns=lambda x: x.split(":")[1] if x != "other" else x, inplace=True
+    )
+    sums = sums.sum()
+    
+    return sums
 
-def count_class_occurences(train_set: pd.DataFrame, test_set: pd.DataFrame):
-    sums_train = train_set.drop(["train_id", "text"], axis=1)
-    sums_train.rename(
-        columns=lambda x: x.split(":")[1] if x != "other" else x, inplace=True
-    )
-    sums_train = sums_train.sum()
-    sums_test = test_set.drop(["train_id", "text"], axis=1)
-    sums_test.rename(
-        columns=lambda x: x.split(":")[1] if x != "other" else x, inplace=True
-    )
-    sums_test = sums_test.sum()
-    sums = pd.DataFrame({"train": sums_train, "test": sums_test})
+
+
+def count_class_occurences(train_set: pd.DataFrame, val_set: pd.DataFrame, test_set: pd.DataFrame):
+    
+    sums_train = sum_df(train_set)
+    sums_val = sum_df(val_set)
+    sums_test = sum_df(test_set)
+
+    sums = pd.DataFrame({"train": sums_train,"val": sums_val, "test": sums_test})
     return sums
 
 
@@ -133,6 +164,9 @@ def class_distribution(dataset_sums: pd.DataFrame):
     percentages = pd.DataFrame()
     percentages["train %"] = round(
         (dataset_sums["train"] / dataset_sums["train"].sum()) * 100, 3
+    )
+    percentages["val %"] = round(
+        (dataset_sums["val"] / dataset_sums["val"].sum()) * 100, 3
     )
     percentages["test %"] = round(
         (dataset_sums["test"] / dataset_sums["test"].sum()) * 100, 3
@@ -147,15 +181,18 @@ def pie_chart_distibution(dataset_sums: pd.DataFrame):
 
 def examine_dataset(cfg: DictConfig):
 
-    dataset = create_dataset(cfg.dataset.path, test_size=0.2)
+    dataset = create_dataset(cfg.dataset.path)
     # Create dataframes for train and test set
     train = dataset["train"]
+    val = dataset["val"]
     test = dataset["test"]
     train_df = pd.DataFrame(train)
+    val_df = pd.DataFrame(val)
     test_df = pd.DataFrame(test)
     print(f"training data size  = {len(train_df)}")
+    print(f"val data size  = {len(val_df)}")
     print(f"test data size  = {len(test_df)}")
-    dataset_sums = count_class_occurences(train_df, test_df)
+    dataset_sums = count_class_occurences(train_df, val_df, test_df)
 
     print(train_df[:100])
     # Print number of occurences and percentage for each class
@@ -206,24 +243,30 @@ def plot_tuple_distribution():
     plt.savefig("output/tuple_size_counts.png")
 
 def print_examples_for_classnames(cfg: DictConfig):
+    #todo: refactor (why the mask ) just load df from csv and print column 
 
     columnnames=["C0020517:Hypersensibilität"]
     
     dataset = create_dataset(cfg.dataset.path, test_size=0.2)
     # Create dataframes for train and test set
     train = dataset["train"]
+    val = dataset["val"]
     test = dataset["test"]
     train_df = pd.DataFrame(train)
+    val_df = pd.DataFrame(val)
     test_df = pd.DataFrame(test)
 
     #create boolean mask
     train_mask = pd.Series([True]*len(train_df))
+    val_mask = pd.Series([True]*len(val_df))
     test_mask = pd.Series([True]*len(test_df))
     for column in columnnames:
         train_mask = train_df[column]==1 & train_mask
+        val_mask = val_df[column]==1 & val_mask
         test_mask  = test_df[column]==1 & test_mask
     
     text = list(train_df[train_mask]["text"])
+    text.extend(list(val_df[val_mask]["text"]))
     text.extend(list(test_df[test_mask]["text"]))
     
     for element in text:

@@ -16,7 +16,7 @@ from .preprocessing import tokenize
 from .utils import configure_wandb
 
 
-def initialize_trainer(cfg: DictConfig):
+def initialize_trainer(cfg: DictConfig,use_test:bool = False):
     dataset = create_dataset(cfg.dataset.path)
     labels = get_class_labels(dataset)
     id2label = {idx: label for idx, label in enumerate(labels)}
@@ -52,7 +52,7 @@ def initialize_trainer(cfg: DictConfig):
         model,
         args,
         train_dataset=encoded_dataset["train"],
-        eval_dataset=encoded_dataset["test"],
+        eval_dataset=encoded_dataset["val"if not use_test else "test"],
         tokenizer=tokenizer,
         compute_metrics=compute_metrics,
     )
@@ -110,10 +110,10 @@ def train(cfg: DictConfig):
         model,
         args,
         train_dataset=encoded_dataset["train"],
-        eval_dataset=encoded_dataset["test"],
+        eval_dataset=encoded_dataset["val"],
         tokenizer=tokenizer,
         compute_metrics=compute_metrics,
     )
 
     trainer.train()
-    trainer.evaluate()
+    trainer.evaluate(encoded_dataset["test"])
