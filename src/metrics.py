@@ -7,15 +7,8 @@ from .helpers import get_class_labels
 
 
 # source: https://jesusleal.io/2021/04/21/Longformer-multilabel-classification/
-def multi_label_metrics(predictions, labels, threshold=0.5):
-    # first, apply sigmoid on predictions which are of shape (batch_size, num_labels)
-    sigmoid = torch.nn.Sigmoid()
-    probs = sigmoid(torch.Tensor(predictions))
-    # next, use threshold to turn them into integer predictions
-    y_pred = np.zeros(probs.shape)
-    y_pred[np.where(probs >= threshold)] = 1
-    # finally, compute metrics
-    y_true = labels
+def multi_label_metrics(y_pred, y_true):
+    # compute metrics
     f1_macro_average = f1_score(y_true=y_true, y_pred=y_pred, average="macro")
     accuracy = accuracy_score(y_true, y_pred)
     # return as dictionary
@@ -34,9 +27,17 @@ def multi_label_metrics(predictions, labels, threshold=0.5):
     return metrics
 
 
-def compute_metrics(p: EvalPrediction):
+def compute_metrics(p: EvalPrediction, threshold:float=0.5):
     preds = p.predictions[0] if isinstance(p.predictions, tuple) else p.predictions
-    result = multi_label_metrics(predictions=preds, labels=p.label_ids)
+    
+    # first, apply sigmoid on predictions which are of shape (batch_size, num_labels)
+    sigmoid = torch.nn.Sigmoid()
+    probs = sigmoid(torch.Tensor(preds))
+    # next, use threshold to turn them into integer predictions
+    y_pred = np.zeros(probs.shape)
+    y_pred[np.where(probs >= threshold)] = 1
+
+    result = multi_label_metrics(y_pred=y_pred, y_true=p.label_ids)
     return result
 
 
