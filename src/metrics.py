@@ -27,9 +27,9 @@ def multi_label_metrics(y_pred, y_true):
     return metrics
 
 
-def compute_metrics(p: EvalPrediction, threshold:float=0.5):
+def compute_metrics(p: EvalPrediction, threshold: float = 0.5):
     preds = p.predictions[0] if isinstance(p.predictions, tuple) else p.predictions
-    
+
     # first, apply sigmoid on predictions which are of shape (batch_size, num_labels)
     sigmoid = torch.nn.Sigmoid()
     probs = sigmoid(torch.Tensor(preds))
