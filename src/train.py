@@ -54,15 +54,17 @@ def initialize_trainer(cfg: DictConfig, use_test: bool = False):
         train_dataset=encoded_dataset["train"],
         eval_dataset=encoded_dataset["val" if not use_test else "test"],
         tokenizer=tokenizer,
-        compute_metrics=compute_metrics,
+        compute_metrics=lambda x: compute_metrics(x, cfg.threshold),
     )
 
     return trainer
 
 
-def train(cfg: DictConfig):
+def train(cfg: DictConfig, dataset=None, train_folder=None):
     configure_wandb(cfg)
-    dataset = create_dataset(cfg.dataset.path, test_size=0.2)
+    
+    if dataset == None:
+        dataset = create_dataset(cfg.dataset.path)
 
     if cfg.upsample:
         dataset["train"] = upsample(dataset["train"])
@@ -90,7 +92,7 @@ def train(cfg: DictConfig):
     )
 
     args = TrainingArguments(
-        os.getcwd(),
+        os.getcwd() if not train_folder else train_folder,
         evaluation_strategy=cfg.evaluation_strategy,
         save_strategy=cfg.save_strategy,
         learning_rate=cfg.learning_rate,
@@ -112,7 +114,7 @@ def train(cfg: DictConfig):
         train_dataset=encoded_dataset["train"],
         eval_dataset=encoded_dataset["val"],
         tokenizer=tokenizer,
-        compute_metrics=compute_metrics,
+        compute_metrics=lambda x: compute_metrics(x, cfg.threshold),
     )
 
     trainer.train()
