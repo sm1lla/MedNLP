@@ -1,0 +1,10 @@
+# @package _group_ 
+
+name : "ensemble"
+
+ensemble_path: "/dhc/groups/appl_ml_ss23_1/hydra_outputs/2023-06-16/11-14-56/"
+model_path: "placeholder"
+ensemble_size: 5
+do_train: False
+ensemble_technique: kfold
+classifier: ProbAvg
