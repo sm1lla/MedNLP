@@ -4,10 +4,10 @@ from .utils import configure_wandb
 from .train import initialize_trainer
 
 
-def evaluate_model(cfg: DictConfig):
+def evaluate_model(cfg: DictConfig,use_test:bool=False):
     configure_wandb(cfg)
-    trainer = initialize_trainer(cfg)
+    trainer = initialize_trainer(cfg,use_test)
 
     results = trainer.evaluate()
 
-    print(results)
+    return results

@@ -2,8 +2,10 @@ defaults:
   - task: ???
   - dataset: mednlp-de
 #wandb args  
-project_name: MedNLP 
+use_wandb: True
+project_name: huggingface 
 run_name: None
+group_name: None
 # Training Arguments
 batch_size: 12 
 evaluation_strategy: "epoch"
