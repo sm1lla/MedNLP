@@ -1,6 +1,7 @@
 import os
 
 import matplotlib.pyplot as plt
+import numpy as np
 import pandas as pd
 from datasets import Dataset, DatasetDict, load_dataset
 from omegaconf import DictConfig
@@ -28,9 +29,10 @@ def create_dataset(dataset_path: str, val_size: float = 0.15, test_size: float =
     # split data in wether possible for stratified split or not
     counts = pd_dataset["label_tuple"].value_counts().to_dict()
     pd_dataset["tuple_count"] = pd_dataset["label_tuple"].apply(lambda x: counts[x])
-    pd_dataset_stratify = pd_dataset[pd_dataset["tuple_count"] != 1]
 
-    pd_dataset_no_stratify = pd_dataset[pd_dataset["tuple_count"] == 1]
+    pd_dataset_stratify = pd_dataset[pd_dataset["tuple_count"] >= 3]
+
+    pd_dataset_no_stratify = pd_dataset[pd_dataset["tuple_count"] < 3]
 
     # split them
     stratified_train, stratified_tmp = train_test_split(
@@ -59,13 +61,13 @@ def create_dataset(dataset_path: str, val_size: float = 0.15, test_size: float =
 
     # split tmp into val test
 
-    stratified_val, stratified_test = train_test_split(
+    stratified_test, stratified_val = train_test_split(
         stratified_tmp,
         test_size=test_size / (val_size + test_size),
         random_state=42,
         stratify=stratified_tmp[["label_tuple"]],
     )
-    unstratified_val, unstratified_test = train_test_split(
+    unstratified_test, unstratified_val = train_test_split(
         unstratified_tmp, random_state=42, test_size=test_size / (val_size + test_size)
     )
 

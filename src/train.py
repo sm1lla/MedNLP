@@ -63,7 +63,7 @@ def initialize_trainer(cfg: DictConfig, use_test: bool = False):
 
 def train(cfg: DictConfig, dataset=None, train_folder=None):
     configure_wandb(cfg)
-
+    
     if dataset == None:
         dataset = create_dataset(cfg.dataset.path)
 
@@ -119,4 +119,4 @@ def train(cfg: DictConfig, dataset=None, train_folder=None):
     )
 
     trainer.train()
-    trainer.evaluate(encoded_dataset["test"])
+    trainer.evaluate(encoded_dataset["val"])
