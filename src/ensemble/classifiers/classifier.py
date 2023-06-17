@@ -1,6 +1,7 @@
 import time
 
 import numpy as np
+import torch
 
 import wandb
 from src.metrics import multi_label_metrics
@@ -12,12 +13,20 @@ from src.utils import (
 
 
 class Classifier:
-    def __init__(self, project_name: str, name: str, group_name: str, estimators: list):
+    def __init__(
+        self,
+        estimators: list,
+        project_name: str,
+        name: str,
+        group_name: str,
+        use_wandb: bool,
+    ):
         self.estimators = estimators
-        self.estimator_val_accuracys = [0] * len(estimators)
+        self.estimator_val_metrics = [0] * len(estimators)
         self.project_name = project_name
         self.name = name
         self.group_name = group_name
+        self.use_wandb = use_wandb
 
     def predict(self, x: list):
         predictions = np.array()
@@ -51,12 +60,9 @@ class Classifier:
                 assert np.array_equal(labels, est_labels)
             labels = est_labels
 
-        with open("/dhc/home/martin.preiss/MedNLP/test.npy", "wb") as f:
-            np.save(f, predictions)
-
         predictions = self.preprocess_predictions(predictions)
 
-        results = self.classify(predictions)
+        results = self.classify(predictions, probs)
 
         et = time.time()
         elapsed_time = et - st
@@ -103,22 +109,23 @@ class Classifier:
         # calculate metrics
         metrics = multi_label_metrics(results, labels)
 
-        configure_wandb_without_cfg(self.project_name, self.name, self.group_name)
-        wandb.log(add_section_to_metric_log("test", metrics))
-        finish_wandb()
+        if self.use_wandb and on_test_data:
+            configure_wandb_without_cfg(self.project_name, self.name, self.group_name)
+            wandb.log(add_section_to_metric_log("test", metrics))
+            finish_wandb()
 
         return metrics
 
     def validate_estimators(self, on_test_data: bool = False):
         for idx, estimator in enumerate(self.estimators):
             if not on_test_data:
-                self.estimator_val_accuracys[idx] = estimator.validate(on_test_data)
+                self.estimator_val_metrics[idx] = estimator.validate(on_test_data)
             else:
                 estimator.validate(on_test_data)
         if not on_test_data:
-            print(self.estimator_val_accuracys)
+            print(self.estimator_val_metrics)
 
-    def classify(self, predictions: list):
+    def classify(self, predictions: list, probs: list):
         raise NotImplementedError("Implement in subclass")
 
     def preprocess_predictions(self, predictions: list):

@@ -1,27 +1,26 @@
-import math
-
 import numpy as np
 
 from src.ensemble.classifiers.classifier import Classifier
 
 
-class MajorityVoteClassifier(Classifier):
+class MaxProbClassifier(Classifier):
     def __init__(
         self,
         estimators: list,
+        threshold: float,
         project_name: str,
         name: str,
         group_name: str,
         use_wandb: bool,
     ):
         super().__init__(
-            estimators, project_name, "MajorityVote" + name, group_name, use_wandb
+            estimators, project_name, "MaxProbVote" + name, group_name, use_wandb
         )
-        self.size_of_majority = math.ceil(len(estimators) / 2)
+        self.threshold = threshold
 
     def classify(self, predictions: np.array, probs: np.array):
-        counted_predictions = np.sum(predictions, axis=0)
+        averaged_probs = np.max(probs, axis=0)
+        result = np.where(averaged_probs >= self.threshold, 1, 0)
 
-        result = np.where(counted_predictions >= self.size_of_majority, 1, 0)
-
+        # result = max(ensemble_predictions,key=itemgetter(1))[0]
         return result

@@ -27,6 +27,7 @@ class estimator():
         self.cfg.run_name = self.name
         self.folder = Path(cfg.task.ensemble_path)  / self.name
         self.cfg.task.model_path = self.folder / get_best_checkpoint(self.folder)
+        self.use_wandb = cfg.use_wandb
 
     def load_model(self):
         raise NotImplementedError() 
@@ -61,10 +62,11 @@ class estimator():
         if not use_test:
             return evaluate_model(self.cfg,use_test)         
         else:
-            #log to wandb 
-            configure_wandb_without_cfg(self.cfg.project_name,self.name,self.cfg.group_name)
-            wandb.log(add_section_to_metric_log("test",evaluate_model(self.cfg,use_test),"eval_"))
-            finish_wandb()
+            #log to wandb
+            if self.use_wandb:
+                configure_wandb_without_cfg(self.cfg.project_name,self.name,self.cfg.group_name)
+                wandb.log(add_section_to_metric_log("test",evaluate_model(self.cfg,use_test),"eval_"))
+                finish_wandb()
     def get_prediction_scores(self,  image_paths: list[str]):
         raise NotImplementedError()         
                   
