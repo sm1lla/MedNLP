@@ -247,9 +247,8 @@ def plot_tuple_distribution():
 
 
 def print_examples_for_classnames(cfg: DictConfig):
+    columnnames = [cfg.task.symptom]
     # todo: refactor (why the mask ) just load df from csv and print column
-
-    columnnames = ["C0020517:Hypersensibilität"]
 
     dataset = create_dataset(cfg.dataset.path, test_size=0.2)
     # Create dataframes for train and test set
