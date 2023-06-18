@@ -17,7 +17,7 @@ from .preprocessing import tokenize
 from .utils import configure_wandb
 
 
-def initialize_trainer(cfg: DictConfig):
+def initialize_trainer(cfg: DictConfig, use_test: bool = False):
     dataset = create_dataset(cfg.dataset.path)
     labels = get_class_labels(dataset)
     id2label = {idx: label for idx, label in enumerate(labels)}
@@ -53,17 +53,19 @@ def initialize_trainer(cfg: DictConfig):
         model,
         args,
         train_dataset=encoded_dataset["train"],
-        eval_dataset=encoded_dataset["test"],
+        eval_dataset=encoded_dataset["val" if not use_test else "test"],
         tokenizer=tokenizer,
-        compute_metrics=compute_metrics,
+        compute_metrics=lambda x: compute_metrics(x, cfg.threshold),
     )
 
     return trainer
 
 
-def train(cfg: DictConfig):
+def train(cfg: DictConfig, dataset=None, train_folder=None):
     configure_wandb(cfg)
-    dataset = create_dataset(cfg.dataset.path, test_size=0.2)
+    
+    if dataset == None:
+        dataset = create_dataset(cfg.dataset.path)
 
     if cfg.upsample:
         dataset["train"] = upsample(dataset["train"])
@@ -98,7 +100,7 @@ def train(cfg: DictConfig):
     )
 
     args = TrainingArguments(
-        os.getcwd(),
+        os.getcwd() if not train_folder else train_folder,
         evaluation_strategy=cfg.evaluation_strategy,
         save_strategy=cfg.save_strategy,
         learning_rate=cfg.learning_rate,
@@ -111,16 +113,17 @@ def train(cfg: DictConfig):
         save_total_limit=cfg.save_total_limit,
         report_to="wandb",
         fp16=cfg.fp16,
+        label_smoothing_factor=cfg.label_smoothing_factor,
     )
 
     trainer = Trainer(
         model,
         args,
         train_dataset=encoded_dataset["train"],
-        eval_dataset=encoded_dataset["test"],
+        eval_dataset=encoded_dataset["val"],
         tokenizer=tokenizer,
-        compute_metrics=compute_metrics,
+        compute_metrics=lambda x: compute_metrics(x, cfg.threshold),
     )
 
     trainer.train()
-    trainer.evaluate()
+    trainer.evaluate(encoded_dataset["val"])
