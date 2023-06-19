@@ -34,3 +34,5 @@ augmentation:
 hydra:
   run:
     dir: /dhc/groups/appl_ml_ss23_1/hydra_outputs/${now:%Y-%m-%d}/${now:%H-%M-%S}
+
+deterministic: False
