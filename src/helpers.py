@@ -1,6 +1,3 @@
-from .dataset import create_dataset
-
-
 def get_class_labels(dataset=None):
     if not dataset:
         return [

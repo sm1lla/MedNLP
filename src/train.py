@@ -13,7 +13,7 @@ from transformers import (
 )
 
 from .augmentation import add_generated_samples
-from .dataset import create_dataset, downsample, upsample
+from .dataset import downsample, load_dataset_from_file, upsample
 from .helpers import get_class_labels
 from .metrics import compute_metrics
 from .preprocessing import tokenize
@@ -21,7 +21,7 @@ from .utils import configure_wandb, delete_checkpoints
 
 
 def initialize_trainer(cfg: DictConfig, use_test: bool = False):
-    dataset = create_dataset(cfg.dataset.path)
+    dataset = load_dataset_from_file(cfg.dataset.path)
     labels = get_class_labels(dataset)
     id2label = {idx: label for idx, label in enumerate(labels)}
     label2id = {label: idx for idx, label in enumerate(labels)}
@@ -71,7 +71,7 @@ def train(cfg: DictConfig, dataset=None, train_folder=None):
     configure_wandb(cfg)
 
     if dataset == None:
-        dataset = create_dataset(cfg.dataset.path)
+        dataset = load_dataset_from_file(cfg.dataset.path)
 
     if cfg.upsample:
         dataset["train"] = upsample(dataset["train"])

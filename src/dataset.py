@@ -205,7 +205,7 @@ def pie_chart_distibution(dataset_sums: pd.DataFrame):
 
 
 def get_pd_datasets(cfg: DictConfig):
-    dataset = create_dataset(cfg.dataset.path)
+    dataset = load_dataset_from_file(cfg.dataset.path)
     # Create dataframes for train and test set
     train = dataset["train"]
     val = dataset["val"]
@@ -277,7 +277,7 @@ def print_examples_for_classnames(cfg: DictConfig):
     columnnames = [cfg.task.symptom]
     # todo: refactor (why the mask ) just load df from csv and print column
 
-    dataset = create_dataset(cfg.dataset.path)
+    dataset = load_dataset_from_file(cfg.dataset.path)
     # Create dataframes for train and test set
     train = dataset["train"]
     val = dataset["val"]
