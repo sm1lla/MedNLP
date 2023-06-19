@@ -1,59 +1,57 @@
-from omegaconf import DictConfig
-import torch
-from src.train import train, initialize_trainer
-from src.evaluate import evaluate_model
-from pathlib import Path
-import numpy as np 
 import os
-from transformers.trainer_callback import TrainerState
-from src.utils import configure_wandb_without_cfg, finish_wandb, add_section_to_metric_log
+from pathlib import Path
+
+import numpy as np
+import torch
+from omegaconf import DictConfig
+
 import wandb
+from src.evaluate import evaluate_model
+from src.train import initialize_trainer, train
+from src.utils import (
+    add_section_to_metric_log,
+    configure_wandb_without_cfg,
+    finish_wandb,
+    get_best_checkpoint
+)
 
 
-def get_best_checkpoint(folder):
-    ckpt_dirs = os.listdir(folder)
-    ckpt_dirs = sorted(ckpt_dirs, key=lambda x: int(x.split('-')[1]))
-    last_ckpt = ckpt_dirs[-1]
-
-    state = TrainerState.load_from_json(folder/last_ckpt/"trainer_state.json")
-    
-    return state.best_model_checkpoint
 
 
-class estimator():
+class estimator:
     def __init__(self, name, cfg: DictConfig):
         self.name = name
         self.cfg = DictConfig(cfg)
         self.cfg.run_name = self.name
-        self.folder = Path(cfg.task.ensemble_path)  / self.name
+        self.folder = Path(cfg.task.ensemble_path) / self.name
         try:
+            print(self.folder / get_best_checkpoint(self.folder))
             self.cfg.task.model_path = self.folder / get_best_checkpoint(self.folder)
         except:
-            self.cfg.task.model_path = None
+            self.cfg.task.model_path = self.folder
         self.use_wandb = cfg.use_wandb
 
     def load_model(self):
-        raise NotImplementedError() 
-    
+        raise NotImplementedError()
+
     def clear_session(self):
         torch.cuda.empty_cache()
-        
-    def predict(self,texts:list):
-        raise NotImplementedError()        
-    
+
+    def predict(self, texts: list):
+        raise NotImplementedError()
 
     def train(self):
-        train(self.cfg,self.folder)  
+        train(self.cfg, self.folder)
         self.cfg.task.model_path = self.folder / get_best_checkpoint(self.folder)
 
-    def train_on_selected_data(self,dataset):     
+    def train_on_selected_data(self, dataset):
         train(self.cfg, dataset, self.folder)
         self.cfg.task.model_path = self.folder / get_best_checkpoint(self.folder)
-        
-    def get_predictions_and_labels_on_datast(self,on_test_data:bool=False):
-        trainer = initialize_trainer(self.cfg,on_test_data)
-        predictions,labels, metrics = trainer.predict(trainer.eval_dataset)
-        
+
+    def get_predictions_and_labels_on_datast(self, on_test_data: bool = False):
+        trainer = initialize_trainer(self.cfg, on_test_data)
+        predictions, labels, metrics = trainer.predict(trainer.eval_dataset)
+
         # first, apply sigmoid on predictions which are of shape (batch_size, num_labels)
         sigmoid = torch.nn.Sigmoid()
         probs = sigmoid(torch.Tensor(predictions))
@@ -63,17 +61,26 @@ class estimator():
 
         return predictions, probs, labels
 
-    def validate(self,use_test:bool = False):
+    def validate(self, use_test: bool = False):
         if not use_test:
-            return evaluate_model(self.cfg,use_test)         
+            return evaluate_model(self.cfg, use_test)
         else:
-            #log to wandb
+            # log to wandb
             if self.use_wandb:
-                configure_wandb_without_cfg(self.cfg.project_name,self.name,self.cfg.group_name)
-                wandb.log(add_section_to_metric_log("test",evaluate_model(self.cfg,use_test),"eval_"))
-                finish_wandb()
-    def get_prediction_scores(self,  image_paths: list[str]):
-        raise NotImplementedError()         
-                  
-    def predict_from_prediction_scores(self, prediction_scores): 
-        raise NotImplementedError()    
+                configure_wandb_without_cfg(
+                    self.cfg.project_name, self.name, self.cfg.group_name
+                )
+                self.cfg.use_wandb = False  # ugly workaround
+                wandb.log(
+                    add_section_to_metric_log(
+                        "test", evaluate_model(self.cfg, use_test), "eval_"
+                    )
+                )
+
+                self.cfg.use_wandb = True
+
+    def get_prediction_scores(self, image_paths: list[str]):
+        raise NotImplementedError()
+
+    def predict_from_prediction_scores(self, prediction_scores):
+        raise NotImplementedError()
