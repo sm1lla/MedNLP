@@ -4,7 +4,6 @@ from pathlib import Path
 import numpy as np
 import torch
 from omegaconf import DictConfig
-from transformers.trainer_callback import TrainerState
 
 import wandb
 from src.evaluate import evaluate_model
@@ -13,17 +12,10 @@ from src.utils import (
     add_section_to_metric_log,
     configure_wandb_without_cfg,
     finish_wandb,
+    get_best_checkpoint
 )
 
 
-def get_best_checkpoint(folder):
-    ckpt_dirs = os.listdir(folder)
-    ckpt_dirs = sorted(ckpt_dirs, key=lambda x: int(x.split("-")[1]))
-    last_ckpt = ckpt_dirs[-1]
-
-    state = TrainerState.load_from_json(folder / last_ckpt / "trainer_state.json")
-
-    return state.best_model_checkpoint
 
 
 class estimator:

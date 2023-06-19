@@ -32,6 +32,8 @@ augmentation:
   generated_classes_indices: [12, 16, 19]
   generated_samples_path: /dhc/groups/appl_ml_ss23_1/datasets/generated/generated_tweets
 
+delete: False  
+
 # Hydra
 hydra:
   run:
