@@ -1,6 +1,9 @@
 import os
+import random
 from pathlib import Path
 
+import numpy as np
+import torch
 from omegaconf import DictConfig
 from transformers import (
     AutoModelForSequenceClassification,
@@ -15,6 +18,12 @@ from .helpers import get_class_labels
 from .metrics import compute_metrics
 from .preprocessing import tokenize
 from .utils import configure_wandb
+
+torch.manual_seed(42)
+random.seed(42)
+np.random.seed(42)
+torch.use_deterministic_algorithms(True)
+os.environ["CUBLAS_WORKSPACE_CONFIG"] = ":16:8"
 
 
 def initialize_trainer(cfg: DictConfig, use_test: bool = False):
@@ -58,12 +67,14 @@ def initialize_trainer(cfg: DictConfig, use_test: bool = False):
         compute_metrics=lambda x: compute_metrics(x, cfg.threshold),
     )
 
+    trainer.model_init()
+
     return trainer
 
 
 def train(cfg: DictConfig, dataset=None, train_folder=None):
     configure_wandb(cfg)
-    
+
     if dataset == None:
         dataset = create_dataset(cfg.dataset.path)
 
