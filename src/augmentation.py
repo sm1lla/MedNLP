@@ -42,9 +42,7 @@ def add_generated_samples(dataset, column_indices: list[int], path: str, languag
 
 
 def add_samples_for_class(index: int, path: str, language: str, columns: list[str]):
-    dataset_generated = pd.read_csv(
-        f"{get_original_cwd()}/{path}/generated_tweets_{language}_{index}.csv"
-    )
+    dataset_generated = pd.read_csv(f"{path}_{language}_{index}.csv")
     dataset_generated = setup_dataframe(dataset_generated, columns, column_index=index)
 
     dataset_generated = replace_placeholder(dataset_generated)
