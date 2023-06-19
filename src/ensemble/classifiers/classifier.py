@@ -60,7 +60,7 @@ class Classifier:
                 assert np.array_equal(labels, est_labels)
             labels = est_labels
 
-        predictions = self.preprocess_predictions(predictions)
+        predictions, probs = self.preprocess(predictions,probs)
 
         results = self.classify(predictions, probs)
 
@@ -112,7 +112,6 @@ class Classifier:
         if self.use_wandb and on_test_data:
             configure_wandb_without_cfg(self.project_name, self.name, self.group_name)
             wandb.log(add_section_to_metric_log("test", metrics))
-            finish_wandb()
 
         return metrics
 
@@ -128,5 +127,5 @@ class Classifier:
     def classify(self, predictions: list, probs: list):
         raise NotImplementedError("Implement in subclass")
 
-    def preprocess_predictions(self, predictions: list):
-        return np.asarray(predictions)
+    def preprocess(self, predictions: list, probs: list):
+        return np.asarray(predictions), torch.stack(probs).numpy()

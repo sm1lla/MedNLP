@@ -17,7 +17,7 @@ from .dataset import create_dataset, downsample, upsample
 from .helpers import get_class_labels
 from .metrics import compute_metrics
 from .preprocessing import tokenize
-from .utils import configure_wandb
+from .utils import configure_wandb, delete_checkpoints
 
 
 def initialize_trainer(cfg: DictConfig, use_test: bool = False):
@@ -133,6 +133,9 @@ def train(cfg: DictConfig, dataset=None, train_folder=None):
 
     trainer.train()
     trainer.evaluate(encoded_dataset["val"])
+    delete_checkpoints(
+        cfg=cfg, train_folder=os.getcwd() if not train_folder else train_folder
+    )
 
 
 def use_deterministic_behaviour():
