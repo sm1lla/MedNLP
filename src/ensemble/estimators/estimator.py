@@ -26,7 +26,10 @@ class estimator():
         self.cfg = DictConfig(cfg)
         self.cfg.run_name = self.name
         self.folder = Path(cfg.task.ensemble_path)  / self.name
-        self.cfg.task.model_path = self.folder / get_best_checkpoint(self.folder)
+        try:
+            self.cfg.task.model_path = self.folder / get_best_checkpoint(self.folder)
+        except:
+            self.cfg.task.model_path = None
         self.use_wandb = cfg.use_wandb
 
     def load_model(self):
@@ -41,11 +44,13 @@ class estimator():
 
     def train(self):
         train(self.cfg,self.folder)  
+        self.cfg.task.model_path = self.folder / get_best_checkpoint(self.folder)
 
     def train_on_selected_data(self,dataset):     
         train(self.cfg, dataset, self.folder)
+        self.cfg.task.model_path = self.folder / get_best_checkpoint(self.folder)
         
-    def get_predictions_and_labels_on_datast(self,on_test_data:bool=False):    
+    def get_predictions_and_labels_on_datast(self,on_test_data:bool=False):
         trainer = initialize_trainer(self.cfg,on_test_data)
         predictions,labels, metrics = trainer.predict(trainer.eval_dataset)
         

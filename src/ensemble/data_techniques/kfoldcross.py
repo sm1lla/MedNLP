@@ -6,9 +6,6 @@ from omegaconf import DictConfig
 from sklearn.model_selection import KFold
 
 from src.dataset import get_pd_datasets
-from src.ensemble.classifiers.majority_vote_classifier import MajorityVoteClassifier
-from src.ensemble.estimators.estimator import estimator
-
 
 def create_kfold_cross_datasets(
     train_df: pd.DataFrame,
@@ -38,7 +35,6 @@ def create_kfold_cross_datasets(
 
 
 def kfoldcross(cfg: DictConfig):
-    modelInfo = str(cfg.task.ensemble_size) + "kFoldCross" + cfg.run_name
 
     train_df, val_df, test_df = get_pd_datasets(cfg)
 
@@ -46,25 +42,4 @@ def kfoldcross(cfg: DictConfig):
         train_df, val_df, test_df, cfg.task.ensemble_size
     )
 
-    if cfg.task.ensemble_path == "None":
-        cfg.task.ensemble_path = os.getcwd()
-
-    cfg.group_name = modelInfo
-
-    learners = []
-
-    for num in range(1, cfg.task.ensemble_size + 1):
-        model = estimator(name=modelInfo + str(num), cfg=cfg)
-        learners.append(model)
-
-    voter_name = "MajorityVote" + str(cfg.task.ensemble_size) + "kFoldCross"
-    voter = MajorityVoteClassifier(
-        cfg.project_name, voter_name, cfg.group_name, estimators=learners
-    )
-
-    if cfg.task.do_train:
-        voter.train_on_selected_data(kfolds_datasets)
-
-    voter.validate_estimators(on_test_data=True)
-
-    voter.validate(on_test_data=True)
+    return kfolds_datasets
