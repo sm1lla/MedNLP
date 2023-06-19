@@ -35,3 +35,28 @@ def get_class_labels(dataset=None):
             if label not in ["train_id", "text"]
         ]
         return labels
+
+
+def drug_examples():
+    return [
+        "Aspirin",
+        "Paracetamol",
+        "Ibuprofen",
+        "Acetaminophen",
+        "Penicillin",
+        "Amoxicillin",
+        "Ciprofloxacin",
+        "Prednisolon",
+        "Omeprazol",
+        "Simvastatin",
+        "Metformin",
+        "Amlodipin",
+        "Warfarin",
+        "Metoprolol",
+        "Losartan",
+        "Sertralin",
+        "Escitalopram",
+        "Duloxetin",
+        "Alprazolam",
+        "Atorvastatin",
+    ]

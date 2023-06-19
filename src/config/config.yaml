@@ -7,12 +7,12 @@ project_name: huggingface
 run_name: None
 group_name: None
 # Training Arguments
-batch_size: 12 
+batch_size: 4
 evaluation_strategy: "epoch"
 save_strategy: "epoch"
-learning_rate: 3.321e-05
+learning_rate: 2.356e-05
 num_train_epochs: 15
-weight_decay: 0.15
+weight_decay: 0.0969
 load_best_model_at_end: True
 metric_for_best_model: "f1"
 save_total_limit: 2
@@ -20,14 +20,21 @@ fp16: True
 label_smoothing_factor: 0.0
 
 # Inference
-threshold: 0.7
-
+threshold: 0.8
 
 # Dataset
 upsample: False
 downsample: False
 
+# Dataset
+augmentation:
+  use: False
+  generated_classes_indices: [12, 16, 19]
+  generated_samples_path: /dhc/groups/appl_ml_ss23_1/datasets/generated/generated_tweets
+
 # Hydra
 hydra:
   run:
     dir: /dhc/groups/appl_ml_ss23_1/hydra_outputs/${now:%Y-%m-%d}/${now:%H-%M-%S}
+
+deterministic: False

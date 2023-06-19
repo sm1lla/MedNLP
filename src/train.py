@@ -1,6 +1,9 @@
 import os
+import random
 from pathlib import Path
 
+import numpy as np
+import torch
 from omegaconf import DictConfig
 from transformers import (
     AutoModelForSequenceClassification,
@@ -9,6 +12,7 @@ from transformers import (
     TrainingArguments,
 )
 
+from .augmentation import add_generated_samples
 from .dataset import create_dataset, downsample, upsample
 from .helpers import get_class_labels
 from .metrics import compute_metrics
@@ -22,7 +26,7 @@ def initialize_trainer(cfg: DictConfig, use_test: bool = False):
     id2label = {idx: label for idx, label in enumerate(labels)}
     label2id = {label: idx for idx, label in enumerate(labels)}
 
-    tokenizer = tokenizer = AutoTokenizer.from_pretrained(Path(cfg.task.model_path))
+    tokenizer = AutoTokenizer.from_pretrained(Path(cfg.task.model_path))
 
     model = AutoModelForSequenceClassification.from_pretrained(
         Path(cfg.task.model_path),
@@ -62,8 +66,10 @@ def initialize_trainer(cfg: DictConfig, use_test: bool = False):
 
 
 def train(cfg: DictConfig, dataset=None, train_folder=None):
+    if cfg.deterministic:
+        use_deterministic_behaviour()
     configure_wandb(cfg)
-    
+
     if dataset == None:
         dataset = create_dataset(cfg.dataset.path)
 
@@ -71,6 +77,13 @@ def train(cfg: DictConfig, dataset=None, train_folder=None):
         dataset["train"] = upsample(dataset["train"])
     if cfg.downsample:
         dataset["train"] = downsample(dataset["train"])
+    if cfg.augmentation.use:
+        dataset["train"] = add_generated_samples(
+            dataset["train"],
+            cfg.augmentation.generated_classes_indices,
+            cfg.augmentation.generated_samples_path,
+            cfg.dataset.name.split("-")[1],
+        )
 
     labels = [
         label
@@ -120,3 +133,11 @@ def train(cfg: DictConfig, dataset=None, train_folder=None):
 
     trainer.train()
     trainer.evaluate(encoded_dataset["val"])
+
+
+def use_deterministic_behaviour():
+    torch.manual_seed(42)
+    random.seed(42)
+    np.random.seed(42)
+    torch.use_deterministic_algorithms(True)
+    os.environ["CUBLAS_WORKSPACE_CONFIG"] = ":16:8"
