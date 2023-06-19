@@ -50,6 +50,7 @@ def initialize_trainer(cfg: DictConfig, use_test: bool = False):
         load_best_model_at_end=cfg.load_best_model_at_end,
         metric_for_best_model=cfg.metric_for_best_model,
         save_total_limit=cfg.save_total_limit,
+        report_to="wandb" if cfg.use_wandb else None,
     )
 
     trainer = Trainer(
@@ -116,7 +117,7 @@ def train(cfg: DictConfig, dataset=None, train_folder=None):
         load_best_model_at_end=cfg.load_best_model_at_end,
         metric_for_best_model=cfg.metric_for_best_model,
         save_total_limit=cfg.save_total_limit,
-        report_to="wandb",
+        report_to="wandb" if cfg.use_wandb else None,
         fp16=cfg.fp16,
         label_smoothing_factor=cfg.label_smoothing_factor,
     )
