@@ -4,6 +4,8 @@ import os
 from src.ensemble.data_techniques.kfoldcross import kfoldcross
 from src.ensemble.data_techniques.default import default_data
 from src.ensemble.data_techniques.bagging import bagging
+from src.ensemble.data_techniques.shuffle import shuffle
+from src.ensemble.data_techniques.partitioning import partitioning
 from src.ensemble.classifiers.majority_vote_classifier import MajorityVoteClassifier
 from src.ensemble.classifiers.avg_prob_classifier import AvgProbClassifier
 from src.ensemble.classifiers.max_prob_classifier import MaxProbClassifier
@@ -20,7 +22,9 @@ def start_ensemble(cfg: DictConfig):
 
     dataset_technique = {"kfoldCross": kfoldcross,
                          "default":default_data,
-                         "bagging":bagging}
+                         "bagging":bagging,
+                         "shuffle":shuffle,
+                         "partition":partitioning}
 
     datasets = dataset_technique[cfg.task.ensemble_technique](cfg)
 
@@ -46,10 +50,12 @@ def start_ensemble(cfg: DictConfig):
     voter3 = MaxProbClassifier(learners,cfg.threshold,cfg.project_name, voter_name, cfg.group_name, cfg.use_wandb)
     voter4 = MedianProbClassifier(learners,cfg.threshold,cfg.project_name, voter_name, cfg.group_name, cfg.use_wandb)
     voter5 = WeightVoteClassifier(learners,cfg.project_name, voter_name, cfg.group_name, cfg.use_wandb)
+
     if cfg.task.do_train:
         voter.train_on_selected_data(datasets)
 
     voter.validate_estimators(on_test_data=True)
+    voter.validate(on_test_data=True)
     voter2.validate(on_test_data=True)
     voter3.validate(on_test_data=True)
     voter4.validate(on_test_data=True)
