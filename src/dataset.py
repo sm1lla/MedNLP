@@ -29,6 +29,7 @@ def create_dataset(dataset_path: str, val_size: float = 0.15, test_size: float =
     # split data in wether possible for stratified split or not
     counts = pd_dataset["label_tuple"].value_counts().to_dict()
     pd_dataset["tuple_count"] = pd_dataset["label_tuple"].apply(lambda x: counts[x])
+
     pd_dataset_stratify = pd_dataset[pd_dataset["tuple_count"] >= 3]
 
     pd_dataset_no_stratify = pd_dataset[pd_dataset["tuple_count"] < 3]
@@ -183,7 +184,7 @@ def pie_chart_distibution(dataset_sums: pd.DataFrame):
     plt.savefig(f"{os.getcwd()}/pie_chart.png", format="png", dpi=1200)
 
 
-def examine_dataset(cfg: DictConfig):
+def get_pd_datasets(cfg: DictConfig):
     dataset = create_dataset(cfg.dataset.path)
     # Create dataframes for train and test set
     train = dataset["train"]
@@ -192,6 +193,12 @@ def examine_dataset(cfg: DictConfig):
     train_df = pd.DataFrame(train)
     val_df = pd.DataFrame(val)
     test_df = pd.DataFrame(test)
+
+    return train_df, val_df, test_df
+
+
+def examine_dataset(cfg: DictConfig):
+    train_df, val_df, test_df = get_pd_datasets(cfg)
     print(f"training data size  = {len(train_df)}")
     print(f"val data size  = {len(val_df)}")
     print(f"test data size  = {len(test_df)}")
@@ -250,7 +257,7 @@ def print_examples_for_classnames(cfg: DictConfig):
     columnnames = [cfg.task.symptom]
     # todo: refactor (why the mask ) just load df from csv and print column
 
-    dataset = create_dataset(cfg.dataset.path, test_size=0.2)
+    dataset = create_dataset(cfg.dataset.path)
     # Create dataframes for train and test set
     train = dataset["train"]
     val = dataset["val"]
