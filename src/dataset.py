@@ -94,6 +94,26 @@ def create_dataset(dataset_path: str, val_size: float = 0.15, test_size: float =
     return dataset
 
 
+def save_splits_to_file(path):
+    dataset = create_dataset(path)
+    path_stemmed = path.split(".")[0]
+    pd.DataFrame(dataset["train"]).to_csv(f"{path_stemmed}_train.csv")
+    pd.DataFrame(dataset["val"]).to_csv(f"{path_stemmed}_val.csv")
+    pd.DataFrame(dataset["test"]).to_csv(f"{path_stemmed}_test.csv")
+
+
+def load_dataset_from_file(path):
+    path_stemmed = path.split(".")[0]
+    dataset_files = {
+        "train": f"{path_stemmed}_train.csv",
+        "val": f"{path_stemmed}_val.csv",
+        "test": f"{path_stemmed}_test.csv",
+    }
+    dataset = load_dataset("csv", data_files=dataset_files)
+    dataset = dataset.remove_columns(["Unnamed: 0"])
+    return dataset
+
+
 def upsample(dataset: Dataset):
     dataset = dataset.to_pandas()
     classes = minority_classes(dataset)
