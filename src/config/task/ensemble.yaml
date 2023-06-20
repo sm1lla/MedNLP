@@ -2,7 +2,8 @@
 
 name : "ensemble"
 
-ensemble_path: "/dhc/groups/appl_ml_ss23_1/hydra_outputs/2023-06-16/11-14-56/"
+#ensemble_path: "/dhc/groups/appl_ml_ss23_1/hydra_outputs/2023-06-16/11-14-56/"
+ensemble_path: "/dhc/groups/appl_ml_ss23_1/ensembles"
 model_path: "placeholder"
 ensemble_size: 5
 do_train: False
