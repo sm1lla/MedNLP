@@ -26,7 +26,6 @@ def get_class_labels(dataset=None):
             "hemorrhagic cystitis",
             "rash",
             "stomatitis",
-            "other",
         ]
     else:
         labels = [

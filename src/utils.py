@@ -43,14 +43,15 @@ def finish_wandb(cfg):
 def finish_wandb():
     wandb.run.finish()
 
-def get_best_checkpoint_name(folder):
+def get_last_checkpoint_name(folder):
     ckpt_dirs = os.listdir(folder)
     ckpt_dirs = sorted(ckpt_dirs, key=lambda x: int(x.split("-")[1]))
     last_ckpt = ckpt_dirs[-1]
 
     return last_ckpt
-def get_best_checkpoint(folder):
-    last_ckpt = get_best_checkpoint_name(folder)
+
+def get_best_checkpoint_path(folder):
+    last_ckpt = get_last_checkpoint_name(folder)
     state = TrainerState.load_from_json(folder / last_ckpt / "trainer_state.json")
 
     return state.best_model_checkpoint    
@@ -64,7 +65,7 @@ def delete_checkpoints(cfg,train_folder:str=None):
 
     folder = Path(folder)
     if not cfg.delete: 
-        checkpoint_folders.remove(get_best_checkpoint_name(folder))
+        checkpoint_folders.remove(Path(get_best_checkpoint_path(folder)).name)
 
     for checkpoint_folder in checkpoint_folders:
         shutil.rmtree(folder / checkpoint_folder)
