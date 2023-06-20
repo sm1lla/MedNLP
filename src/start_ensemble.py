@@ -20,7 +20,7 @@ def start_ensemble(cfg: DictConfig):
     cfg.run_name = "" if cfg.run_name =="None" else cfg.run_name
     modelInfo = str(cfg.task.ensemble_size) + cfg.task.ensemble_technique + cfg.run_name
 
-    dataset_technique = {"kfoldCross": kfoldcross,
+    dataset_technique = {"kfold": kfoldcross,
                          "default":default_data,
                          "bagging":bagging,
                          "shuffle":shuffle,
@@ -53,8 +53,8 @@ def start_ensemble(cfg: DictConfig):
 
     if cfg.task.do_train:
         voter.train_on_selected_data(datasets)
-
-    voter.validate_estimators(on_test_data=True)
+    #else:
+    #    voter.validate_estimators(on_test_data=True)
     voter.validate(on_test_data=True)
     voter2.validate(on_test_data=True)
     voter3.validate(on_test_data=True)
