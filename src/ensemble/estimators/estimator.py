@@ -12,10 +12,8 @@ from src.utils import (
     add_section_to_metric_log,
     configure_wandb_without_cfg,
     finish_wandb,
-    get_best_checkpoint_path
+    get_best_checkpoint_path,
 )
-
-
 
 
 class estimator:
@@ -24,10 +22,9 @@ class estimator:
         self.cfg = DictConfig(cfg)
         self.cfg.run_name = self.name
         self.folder = Path(cfg.task.ensemble_path) / self.name
-        try:
-            print(self.folder / get_best_checkpoint_path(self.folder))
-            self.cfg.task.model_path = self.folder / get_best_checkpoint_path(self.folder)
-        except:
+        if cfg.task.do_train is not True:
+            self.cfg.task.model_path = get_best_checkpoint_path(self.folder)
+        else:
             self.cfg.task.model_path = self.folder
         self.use_wandb = cfg.use_wandb
 
@@ -42,11 +39,11 @@ class estimator:
 
     def train(self):
         train(self.cfg, self.folder)
-        self.cfg.task.model_path = self.folder / get_best_checkpoint_path(self.folder)
+        self.cfg.task.model_path = get_best_checkpoint_path(self.folder)
 
     def train_on_selected_data(self, dataset):
         train(self.cfg, dataset, self.folder)
-        self.cfg.task.model_path = self.folder / get_best_checkpoint_path(self.folder)
+        self.cfg.task.model_path = get_best_checkpoint_path(self.folder)
 
     def get_predictions_and_labels_on_datast(self, on_test_data: bool = False):
         trainer = initialize_trainer(self.cfg, on_test_data)
