@@ -51,6 +51,7 @@ def get_last_checkpoint_name(folder):
     return last_ckpt
 
 def get_best_checkpoint_path(folder):
+    folder = Path(folder)
     last_ckpt = get_last_checkpoint_name(folder)
     state = TrainerState.load_from_json(folder / last_ckpt / "trainer_state.json")
 
