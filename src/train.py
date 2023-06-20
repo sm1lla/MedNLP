@@ -12,12 +12,14 @@ from transformers import (
     TrainingArguments,
 )
 
+import wandb
+
 from .augmentation import add_generated_samples
 from .dataset import downsample, load_dataset_from_file, upsample
 from .helpers import get_class_labels
 from .metrics import compute_metrics
 from .preprocessing import tokenize
-from .utils import configure_wandb, delete_checkpoints
+from .utils import add_section_to_metric_log, configure_wandb, delete_checkpoints
 
 
 def initialize_trainer(cfg: DictConfig, use_test: bool = False):
@@ -132,7 +134,8 @@ def train(cfg: DictConfig, dataset=None, train_folder=None):
     )
 
     trainer.train()
-    trainer.evaluate(encoded_dataset["val"])
+    test_evaluation = trainer.evaluate(encoded_dataset["val"])
+    wandb.log(add_section_to_metric_log("test", test_evaluation, "eval_"))
     delete_checkpoints(
         cfg=cfg, train_folder=os.getcwd() if not train_folder else train_folder
     )
