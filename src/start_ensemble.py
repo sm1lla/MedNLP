@@ -15,16 +15,60 @@ from src.ensemble.estimators.estimator import estimator
 
 
 
+
+def get_default_estimators(cfg: DictConfig, modelInfo:str,datasets:list):
+    learners = []
+
+    for num,dataset in zip(range(1, cfg.task.ensemble_size + 1),datasets):
+        model = estimator(name=modelInfo + str(num), cfg=cfg,dataset=dataset)
+        learners.append(model)
+    
+    return learners
+
+def get_multilingual_estimators(cfg: DictConfig, modelInfo:str,datasets:list):
+    #ignore datasets
+
+    learners = []
+
+    
+
+
+
+    language = {
+        0:"mednlp-de",
+        1:"mednlp-en",
+        2:"mednlp-ja",
+        3:"mednlp-fr",
+    }
+    ensemble_size = cfg.task.ensemble_size - (cfg.task.ensemble_size%4) # we want for every language at least one 
+    if ensemble_size<4 and (ensemble_size%4)!= 0:
+        raise Exception("Multilingual Ensemble does not fulfill requirements (ensemble size should be at least languages size and dividable by it)")
+    cfg.task.ensemble_size = ensemble_size
+
+    for num in range(ensemble_size):
+
+        cfg.dataset = language[num%4] 
+        
+        model = estimator(name=modelInfo + str(num+1), cfg=cfg)
+        learners.append(model)
+    
+    return learners
+
+dataset_technique = {"kfold": kfoldcross,
+                     "default":default_data,
+                     "bagging":bagging,
+                     "shuffle":shuffle,
+                     "partition":partitioning}
+
+estimator_technique  = {
+    "default":get_default_estimators,
+    "multilingual": get_multilingual_estimators
+}
+
 def start_ensemble(cfg: DictConfig):
 
     cfg.run_name = "" if cfg.run_name =="None" else cfg.run_name
     modelInfo = str(cfg.task.ensemble_size) + cfg.task.ensemble_technique + cfg.run_name
-
-    dataset_technique = {"kfold": kfoldcross,
-                         "default":default_data,
-                         "bagging":bagging,
-                         "shuffle":shuffle,
-                         "partition":partitioning}
 
     datasets = dataset_technique[cfg.task.ensemble_technique](cfg)
 
@@ -34,27 +78,23 @@ def start_ensemble(cfg: DictConfig):
 
     cfg.group_name = modelInfo
 
-    learners = []
-
-    for num in range(1, cfg.task.ensemble_size + 1):
-        model = estimator(name=modelInfo + str(num), cfg=cfg)
-        learners.append(model)
+    estimators = estimator_technique[cfg.task.estimator_technique](cfg,modelInfo,datasets)
 
     voter_name =  str(cfg.task.ensemble_size) + cfg.task.ensemble_technique
 
     voter = MajorityVoteClassifier(
-        learners, cfg.project_name, voter_name, cfg.group_name, cfg.use_wandb
+        estimators, cfg.project_name, voter_name, cfg.group_name, cfg.use_wandb
     )
 
-    voter2 = AvgProbClassifier(learners,cfg.threshold,cfg.project_name, voter_name, cfg.group_name, cfg.use_wandb)
-    voter3 = MaxProbClassifier(learners,cfg.threshold,cfg.project_name, voter_name, cfg.group_name, cfg.use_wandb)
-    voter4 = MedianProbClassifier(learners,cfg.threshold,cfg.project_name, voter_name, cfg.group_name, cfg.use_wandb)
-    voter5 = WeightVoteClassifier(learners,cfg.project_name, voter_name, cfg.group_name, cfg.use_wandb)
+    voter2 = AvgProbClassifier(estimators,cfg.threshold,cfg.project_name, voter_name, cfg.group_name, cfg.use_wandb)
+    voter3 = MaxProbClassifier(estimators,cfg.threshold,cfg.project_name, voter_name, cfg.group_name, cfg.use_wandb)
+    voter4 = MedianProbClassifier(estimators,cfg.threshold,cfg.project_name, voter_name, cfg.group_name, cfg.use_wandb)
+    voter5 = WeightVoteClassifier(estimators,cfg.project_name, voter_name, cfg.group_name, cfg.use_wandb)
 
     if cfg.task.do_train:
-        voter.train_on_selected_data(datasets)
-    #else:
-    #    voter.validate_estimators(on_test_data=True)
+        voter.train()
+    else:
+       voter.validate_estimators(on_test_data=True)
     voter.validate(on_test_data=True)
     voter2.validate(on_test_data=True)
     voter3.validate(on_test_data=True)

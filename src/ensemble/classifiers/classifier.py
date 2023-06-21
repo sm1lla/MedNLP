@@ -72,25 +72,10 @@ class Classifier:
 
     def train(self):
         st = time.time()
+
         for estimator in self.estimators:
             single_st = time.time()
             estimator.train()
-            single_et = time.time()
-            single_elapsed_time = single_et - single_st
-            print("\n\n")
-            print(f"Training completed for model = {estimator.name}")
-            print("training time:", single_elapsed_time, "seconds")
-            print("\n\n")
-        et = time.time()
-        elapsed_time = et - st
-        print("Total training time:", elapsed_time, "seconds")
-
-    def train_on_selected_data(self, datasets: list):
-        st = time.time()
-
-        for estimator, dataset in zip(self.estimators, datasets):
-            single_st = time.time()
-            estimator.train_on_selected_data(dataset)
             single_et = time.time()
             single_elapsed_time = single_et - single_st
             print("\n\n")
