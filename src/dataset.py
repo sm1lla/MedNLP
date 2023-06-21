@@ -94,6 +94,26 @@ def create_dataset(dataset_path: str, val_size: float = 0.15, test_size: float =
     return dataset
 
 
+def save_splits_to_file(path):
+    dataset = create_dataset(path)
+    path_stemmed = path.split(".")[0]
+    pd.DataFrame(dataset["train"]).to_csv(f"{path_stemmed}_train.csv")
+    pd.DataFrame(dataset["val"]).to_csv(f"{path_stemmed}_val.csv")
+    pd.DataFrame(dataset["test"]).to_csv(f"{path_stemmed}_test.csv")
+
+
+def load_dataset_from_file(path):
+    path_stemmed = path.split(".")[0]
+    dataset_files = {
+        "train": f"{path_stemmed}_train.csv",
+        "val": f"{path_stemmed}_val.csv",
+        "test": f"{path_stemmed}_test.csv",
+    }
+    dataset = load_dataset("csv", data_files=dataset_files)
+    dataset = dataset.remove_columns(["Unnamed: 0"])
+    return dataset
+
+
 def upsample(dataset: Dataset):
     dataset = dataset.to_pandas()
     classes = minority_classes(dataset)
@@ -185,7 +205,7 @@ def pie_chart_distibution(dataset_sums: pd.DataFrame):
 
 
 def get_pd_datasets(cfg: DictConfig):
-    dataset = create_dataset(cfg.dataset.path)
+    dataset = load_dataset_from_file(cfg.dataset.path)
     # Create dataframes for train and test set
     train = dataset["train"]
     val = dataset["val"]
@@ -257,7 +277,7 @@ def print_examples_for_classnames(cfg: DictConfig):
     columnnames = [cfg.task.symptom]
     # todo: refactor (why the mask ) just load df from csv and print column
 
-    dataset = create_dataset(cfg.dataset.path)
+    dataset = load_dataset_from_file(cfg.dataset.path)
     # Create dataframes for train and test set
     train = dataset["train"]
     val = dataset["val"]

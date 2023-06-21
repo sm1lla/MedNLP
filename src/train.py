@@ -15,7 +15,7 @@ from transformers import (
 import wandb
 
 from .augmentation import add_generated_samples
-from .dataset import create_dataset, downsample, upsample
+from .dataset import downsample, load_dataset_from_file, upsample
 from .helpers import get_class_labels
 from .metrics import compute_metrics
 from .preprocessing import tokenize
@@ -23,13 +23,14 @@ from .utils import add_section_to_metric_log, configure_wandb, delete_checkpoint
 from datasets import DatasetDict
 
 
+
 def init_trainer_with_dataset(cfg: DictConfig,dataset:DatasetDict, use_test: bool = False):
     return initialize_trainer(cfg=cfg,use_test=use_test,dataset=dataset)
 
 def initialize_trainer(cfg: DictConfig, use_test: bool = False, dataset:DatasetDict=None):
 
-    dataset = dataset if dataset is not None else create_dataset(cfg.dataset.path)
-    
+    dataset = dataset if dataset is not None else load_dataset_from_file(cfg.dataset.path)
+
     labels = get_class_labels(dataset)
     id2label = {idx: label for idx, label in enumerate(labels)}
     label2id = {label: idx for idx, label in enumerate(labels)}
@@ -79,7 +80,7 @@ def train(cfg: DictConfig, dataset=None, train_folder=None):
     configure_wandb(cfg)
 
     if dataset == None:
-        dataset = create_dataset(cfg.dataset.path)
+        dataset = load_dataset_from_file(cfg.dataset.path)
 
     if cfg.upsample:
         dataset["train"] = upsample(dataset["train"])
