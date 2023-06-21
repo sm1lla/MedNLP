@@ -1,4 +1,6 @@
-from omegaconf import DictConfig
+from omegaconf import DictConfig, OmegaConf
+from hydra.utils import get_original_cwd
+from pathlib import Path
 import os
 
 from src.ensemble.data_techniques.kfoldcross import kfoldcross
@@ -12,6 +14,7 @@ from src.ensemble.classifiers.max_prob_classifier import MaxProbClassifier
 from src.ensemble.classifiers.median_prob_classifier import MedianProbClassifier
 from src.ensemble.classifiers.weighted_label_classifier import WeightVoteClassifier
 from src.ensemble.estimators.estimator import estimator
+from src.dataset import load_dataset_from_file
 
 
 
@@ -29,16 +32,13 @@ def get_multilingual_estimators(cfg: DictConfig, modelInfo:str,datasets:list):
     #ignore datasets
 
     learners = []
-
-    
-
-
+    config_directory = Path(get_original_cwd()) / "src" / "config"/"dataset"
 
     language = {
-        0:"mednlp-de",
-        1:"mednlp-en",
-        2:"mednlp-ja",
-        3:"mednlp-fr",
+        0: "de",
+        1:"en",
+        2:"ja",
+        3:"fr",
     }
     ensemble_size = cfg.task.ensemble_size - (cfg.task.ensemble_size%4) # we want for every language at least one 
     if ensemble_size<4 and (ensemble_size%4)!= 0:
@@ -46,10 +46,13 @@ def get_multilingual_estimators(cfg: DictConfig, modelInfo:str,datasets:list):
     cfg.task.ensemble_size = ensemble_size
 
     for num in range(ensemble_size):
-
-        cfg.dataset = language[num%4] 
+        dataset_config_name = language[num%4] + ".yaml"
+        dataset_config_path = config_directory/dataset_config_name
+        cfg.dataset = OmegaConf.load(dataset_config_path )
         
-        model = estimator(name=modelInfo + str(num+1), cfg=cfg)
+        dataset = load_dataset_from_file(cfg.dataset.path)
+        
+        model = estimator(name=modelInfo + language[num%4] + str(num+1), cfg=cfg, dataset=dataset)
         learners.append(model)
     
     return learners
@@ -68,7 +71,7 @@ estimator_technique  = {
 def start_ensemble(cfg: DictConfig):
 
     cfg.run_name = "" if cfg.run_name =="None" else cfg.run_name
-    modelInfo = str(cfg.task.ensemble_size) + cfg.task.ensemble_technique + cfg.run_name
+    modelInfo = str(cfg.task.ensemble_size) + cfg.task.ensemble_technique + cfg.task.ensemble_technique + cfg.run_name
 
     datasets = dataset_technique[cfg.task.ensemble_technique](cfg)
 
