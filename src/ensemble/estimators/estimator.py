@@ -3,11 +3,12 @@ from pathlib import Path
 
 import numpy as np
 import torch
-from omegaconf import DictConfig
 from datasets import DatasetDict
+from omegaconf import DictConfig
+
 import wandb
 from src.evaluate import evaluate_model_with_data
-from src.train import train, init_trainer_with_dataset
+from src.train import init_trainer_with_dataset, train
 from src.utils import (
     add_section_to_metric_log,
     configure_wandb_without_cfg,
@@ -17,7 +18,7 @@ from src.utils import (
 
 
 class estimator:
-    def __init__(self, name, cfg: DictConfig, dataset:DatasetDict):
+    def __init__(self, name, cfg: DictConfig, dataset: DatasetDict):
         self.name = name
         self.cfg = DictConfig(cfg)
         self.cfg.run_name = self.name
@@ -38,13 +39,14 @@ class estimator:
     def predict(self, texts: list):
         raise NotImplementedError()
 
-
     def train(self):
         train(self.cfg, self.dataset, self.folder)
         self.cfg.task.model_path = get_best_checkpoint_path(self.folder)
 
     def get_predictions_and_labels_on_datast(self, on_test_data: bool = False):
-        trainer = init_trainer_with_dataset(cfg=self.cfg,dataset=self.dataset, use_test=on_test_data)
+        trainer = init_trainer_with_dataset(
+            cfg=self.cfg, dataset=self.dataset, use_test=on_test_data
+        )
         predictions, labels, metrics = trainer.predict(trainer.eval_dataset)
 
         # first, apply sigmoid on predictions which are of shape (batch_size, num_labels)
@@ -64,9 +66,15 @@ class estimator:
             self.cfg.use_wandb = False  # ugly workaround
             wandb.log(
                 add_section_to_metric_log(
-                    "test", evaluate_model_with_data(cfg=self.cfg,dataset=self.dataset, use_test=use_test), "eval_"
+                    "test",
+                    evaluate_model_with_data(
+                        cfg=self.cfg, dataset=self.dataset, use_test=use_test
+                    ),
+                    "eval_",
                 )
             )
             self.cfg.use_wandb = True
         else:
-            return evaluate_model_with_data(cfg=self.cfg,dataset=self.dataset, use_test=use_test)    
+            return evaluate_model_with_data(
+                cfg=self.cfg, dataset=self.dataset, use_test=use_test
+            )

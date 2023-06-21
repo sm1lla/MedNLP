@@ -60,7 +60,7 @@ class Classifier:
                 assert np.array_equal(labels, est_labels)
             labels = est_labels
 
-        predictions, probs = self.preprocess(predictions,probs)
+        predictions, probs = self.preprocess(predictions, probs)
 
         results = self.classify(predictions, probs)
 
