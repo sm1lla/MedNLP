@@ -1,0 +1,5 @@
+# @package _group_
+
+name: en
+path: /dhc/groups/appl_ml_ss23_1/datasets/en/ntcir17_mednlp-sc_sm_en_train_19_06_23.csv
+pretrained_model: bert-base-uncased

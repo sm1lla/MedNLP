@@ -1,6 +1,6 @@
 defaults:
+  - dataset: de
   - task: ???
-  - dataset: mednlp-de
 #wandb args  
 use_wandb: True
 project_name: huggingface 
