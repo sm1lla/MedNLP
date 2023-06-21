@@ -4,6 +4,7 @@ from pathlib import Path
 
 import numpy as np
 import torch
+from datasets import DatasetDict
 from omegaconf import DictConfig
 from transformers import (
     AutoModelForSequenceClassification,
@@ -20,16 +21,20 @@ from .helpers import get_class_labels
 from .metrics import compute_metrics
 from .preprocessing import tokenize
 from .utils import add_section_to_metric_log, configure_wandb, delete_checkpoints
-from datasets import DatasetDict
 
 
+def init_trainer_with_dataset(
+    cfg: DictConfig, dataset: DatasetDict, use_test: bool = False
+):
+    return initialize_trainer(cfg=cfg, use_test=use_test, dataset=dataset)
 
-def init_trainer_with_dataset(cfg: DictConfig,dataset:DatasetDict, use_test: bool = False):
-    return initialize_trainer(cfg=cfg,use_test=use_test,dataset=dataset)
 
-def initialize_trainer(cfg: DictConfig, use_test: bool = False, dataset:DatasetDict=None):
-
-    dataset = dataset if dataset is not None else load_dataset_from_file(cfg.dataset.path)
+def initialize_trainer(
+    cfg: DictConfig, use_test: bool = False, dataset: DatasetDict = None
+):
+    dataset = (
+        dataset if dataset is not None else load_dataset_from_file(cfg.dataset.path)
+    )
 
     labels = get_class_labels(dataset)
     id2label = {idx: label for idx, label in enumerate(labels)}
