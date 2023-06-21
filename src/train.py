@@ -20,10 +20,16 @@ from .helpers import get_class_labels
 from .metrics import compute_metrics
 from .preprocessing import tokenize
 from .utils import add_section_to_metric_log, configure_wandb, delete_checkpoints
+from datasets import DatasetDict
 
 
-def initialize_trainer(cfg: DictConfig, use_test: bool = False):
-    dataset = create_dataset(cfg.dataset.path)
+def init_trainer_with_dataset(cfg: DictConfig,dataset:DatasetDict, use_test: bool = False):
+    return initialize_trainer(cfg=cfg,use_test=use_test,dataset=dataset)
+
+def initialize_trainer(cfg: DictConfig, use_test: bool = False, dataset:DatasetDict=None):
+
+    dataset = dataset if dataset is not None else create_dataset(cfg.dataset.path)
+    
     labels = get_class_labels(dataset)
     id2label = {idx: label for idx, label in enumerate(labels)}
     label2id = {label: idx for idx, label in enumerate(labels)}
