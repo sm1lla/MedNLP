@@ -37,6 +37,33 @@ def get_class_labels(dataset=None):
         return labels
 
 
+def symptoms_for_generation():
+    return [
+        "Übelkeit",
+        "Durchfall",
+        "Müdigkeit",
+        "Erbrechen",
+        "Appetitlosigkeit",
+        "Kopfschmerzen",
+        "Fieber",
+        "interstitieller Lungenentzündung",
+        "Leberschädigung",
+        "Schwindel",
+        "Schmerz",
+        "Alopezie",
+        "Aspirin-Asthma",
+        "Nierenschäden",
+        "allergischer Reaktion",
+        "Schlaflosigkeit",
+        "Verstopfung",
+        "Knochenmarksuppression",
+        "Bauchschmerzen",
+        "hämorrhagischer Zystitis",
+        "Ausschlag",
+        "Mundgeschwüren",
+    ]
+
+
 def drug_examples():
     return [
         "Aspirin",
