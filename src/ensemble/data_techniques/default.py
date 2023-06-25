@@ -1,6 +1,7 @@
 from omegaconf import DictConfig
-from src.dataset import create_dataset
+
+from src.dataset import load_dataset_from_file
+
 
 def default_data(cfg: DictConfig):
-
-    return [create_dataset(cfg.dataset.path)]*cfg.task.ensemble_size
+    return [load_dataset_from_file(cfg.dataset.path)] * cfg.task.ensemble_size
