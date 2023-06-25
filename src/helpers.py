@@ -1,6 +1,3 @@
-from .dataset import create_dataset
-
-
 def get_class_labels(dataset=None):
     if not dataset:
         return [
@@ -26,7 +23,6 @@ def get_class_labels(dataset=None):
             "hemorrhagic cystitis",
             "rash",
             "stomatitis",
-            "other",
         ]
     else:
         labels = [
