@@ -1,0 +1,4 @@
+# @package _group_
+name : "translate"
+prefix : "translate English to German: "
+mode : "translation_en_to_de"

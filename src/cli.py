@@ -1,6 +1,7 @@
 import hydra
 from omegaconf import DictConfig
 
+from .augmentation import translate
 from .dataset import examine_dataset, print_examples_for_classnames
 from .debug import debug
 from .evaluate import evaluate_model
@@ -23,6 +24,7 @@ def cli(cfg: DictConfig):
         "ensemble": start_ensemble,
         "examples": print_examples_for_classnames,
         "generate": generate_for_all_classes,
+        "translate": translate,
     }
 
     options[cfg.task.name](cfg)

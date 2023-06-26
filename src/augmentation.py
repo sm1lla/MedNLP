@@ -3,10 +3,13 @@ import random
 import numpy as np
 import pandas as pd
 from datasets import Dataset
-from hydra.utils import get_original_cwd
+from omegaconf import DictConfig
 from sklearn.utils import shuffle
+from transformers import pipeline
 
 from src.helpers import drug_examples
+
+from .dataset import load_dataset_from_file
 
 
 def setup_dataframe(new_dataset: pd.DataFrame, columns: list[str], column_index: int):
@@ -47,3 +50,17 @@ def add_samples_for_class(index: int, path: str, language: str, columns: list[st
 
     dataset_generated = replace_placeholder(dataset_generated)
     return dataset_generated
+
+
+def translate(cfg: DictConfig):
+    dataset = load_dataset_from_file(cfg.dataset.path)["train"]
+    translator = pipeline(cfg.task.mode, model="t5-base", device=0)
+    results = translator([cfg.task.prefix + text for text in dataset["text"]])
+
+    translations = [translation["translation_text"] for translation in results]
+
+    dataset_pd = pd.DataFrame(dataset)
+    dataset_pd["text"] = translations
+
+    path_stemmed = cfg.dataset.path.split(".")[0]
+    dataset_pd.to_csv(f"{path_stemmed}_train_translated.csv")
