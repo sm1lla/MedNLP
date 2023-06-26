@@ -15,7 +15,7 @@ from transformers import (
 
 import wandb
 
-from .augmentation import add_generated_samples
+from .augmentation import add_generated_samples, add_translated
 from .dataset import downsample, load_dataset_from_file, upsample
 from .helpers import get_class_labels
 from .metrics import compute_metrics
@@ -98,6 +98,8 @@ def train(cfg: DictConfig, dataset=None, train_folder=None):
             cfg.augmentation.generated_samples_path,
             cfg.dataset.name,
         )
+    if cfg.add_translated:
+        dataset["train"] = add_translated(dataset["train"], cfg.dataset.path)
 
     labels = [
         label

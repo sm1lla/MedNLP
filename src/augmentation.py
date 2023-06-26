@@ -2,7 +2,7 @@ import random
 
 import numpy as np
 import pandas as pd
-from datasets import Dataset
+from datasets import Dataset, DatasetDict
 from omegaconf import DictConfig
 from sklearn.utils import shuffle
 from transformers import pipeline
@@ -62,5 +62,20 @@ def translate(cfg: DictConfig):
     dataset_pd = pd.DataFrame(dataset)
     dataset_pd["text"] = translations
 
-    path_stemmed = cfg.dataset.path.split(".")[0]
-    dataset_pd.to_csv(f"{path_stemmed}_train_translated.csv")
+    dataset_pd.to_csv(cfg.task.save_path)
+
+
+def add_translated(dataset: DatasetDict, path: str):
+    dataset = dataset.to_pandas()
+    stemmed = path.split(".")[0]
+    path_translated_senteces = f"{stemmed}_translated.csv"
+    translated = pd.read_csv(path_translated_senteces)
+    translated.drop("Unnamed: 0", axis=1, inplace=True)
+    num_rows = len(translated)
+    translated["train_id"] = [float(num) for num in range(10000, 10000 + num_rows)]
+    translated.rename(
+        columns=dict(zip(translated.columns, dataset.columns)), inplace=True
+    )
+    dataset = pd.concat([dataset, translated], ignore_index=True)
+    shuffle(dataset, random_state=42)
+    return Dataset.from_pandas(dataset)

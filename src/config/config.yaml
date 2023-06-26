@@ -4,14 +4,14 @@ defaults:
 #wandb args  
 use_wandb: True
 project_name: deterministic 
-run_name: all
-group_name: updated_data
+run_name: first_try
+group_name: translation
 # Training Arguments
 batch_size: 4
 evaluation_strategy: "epoch"
 save_strategy: "epoch"
 learning_rate: 2.356e-05
-num_train_epochs: 20
+num_train_epochs: 30
 weight_decay: 0.0969
 load_best_model_at_end: True
 metric_for_best_model: "f1"
@@ -28,9 +28,11 @@ downsample: False
 
 # Dataset
 augmentation:
-  use: True
+  use: False
   generated_classes_indices: [2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23]
   generated_samples_path: /dhc/groups/appl_ml_ss23_1/datasets/generated/generated_tweets
+
+add_translated : True
 
 delete: False  
 
