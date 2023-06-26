@@ -96,7 +96,7 @@ def train(cfg: DictConfig, dataset=None, train_folder=None):
             dataset["train"],
             cfg.augmentation.generated_classes_indices,
             cfg.augmentation.generated_samples_path,
-            cfg.dataset.name.split("-")[1],
+            cfg.dataset.name,
         )
 
     labels = [
