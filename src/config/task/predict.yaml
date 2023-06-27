@@ -1,4 +1,6 @@
 # @package _group_
 name : "predict"
 
-model_path : "/dhc/home/smilla.fox/MedNLP/outputs/2023-05-30/19-38-53/checkpoint-5928"
+model_path : "/dhc/groups/appl_ml_ss23_1/hydra_outputs/2023-06-26/11-15-01/checkpoint-37638"
+print_probs : False
+print_wrong_predictions : True
