@@ -132,7 +132,7 @@ def upsample(dataset: Dataset):
                     count += 1
 
     updated_dataset = pd.concat([dataset, dataset_extension], ignore_index=True)
-    shuffle(updated_dataset, random_state=42)
+    updated_dataset = shuffle(updated_dataset, random_state=42)
     return Dataset.from_pandas(updated_dataset)
 
 
@@ -146,7 +146,7 @@ def downsample(dataset: Dataset):
 
         dataset = pd.concat([dataset, new_subset], ignore_index=True)
 
-    shuffle(dataset, random_state=42)
+    updated_dataset = shuffle(dataset, random_state=42)
     return Dataset.from_pandas(dataset)
 
 
@@ -302,3 +302,29 @@ def print_examples_for_classnames(cfg: DictConfig):
     for element in text:
         print(element)
         print()
+
+
+def create_multilingual_dataset():
+    path = "/dhc/groups/appl_ml_ss23_1/datasets"
+    version = "19_06_23"
+    splits = ["train", "val", "test"]
+    languages = ["de", "en", "fr", "ja"]
+    for split in splits:
+        data = []
+        for language in languages:
+            language_data = pd.read_csv(
+                f"{path}/{language}/ntcir17_mednlp-sc_sm_{language}_train_{version}_{split}.csv"
+            )
+            language_data.drop(["Unnamed: 0"], axis=1, inplace=True)
+            new_columns = [
+                column_name.split(":")[0] for column_name in language_data.columns
+            ]
+            language_data.rename(
+                columns=dict(zip(language_data.columns, new_columns)), inplace=True
+            )
+            data.append(language_data)
+        multilingual_dataset = pd.concat(data, ignore_index=True)
+        multilingual_dataset = shuffle(multilingual_dataset, random_state=42)
+        multilingual_dataset.to_csv(
+            f"{path}/multi/ntcir17_mednlp-sc_sm_multi_train_{version}_{split}.csv"
+        )

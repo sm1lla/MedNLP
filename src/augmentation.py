@@ -40,7 +40,7 @@ def add_generated_samples(dataset, column_indices: list[int], path: str, languag
         )
         dataset = pd.concat([dataset, dataset_generated], ignore_index=True)
 
-    shuffle(dataset, random_state=42)
+    dataset = shuffle(dataset, random_state=42)
     return Dataset.from_pandas(dataset)
 
 
@@ -77,5 +77,5 @@ def add_translated(dataset: DatasetDict, path: str):
         columns=dict(zip(translated.columns, dataset.columns)), inplace=True
     )
     dataset = pd.concat([dataset, translated], ignore_index=True)
-    shuffle(dataset, random_state=42)
+    dataset = shuffle(dataset, random_state=42)
     return Dataset.from_pandas(dataset)
