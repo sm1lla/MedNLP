@@ -1,18 +1,18 @@
 defaults:
-  - dataset:  multi-de
+  - dataset:  de
   - task: ???
 #wandb args  
-use_wandb: True
+use_wandb: False
 project_name: deterministic 
-run_name:  multi-de
+run_name:  translation
 group_name: multilingual
 # Training Arguments
-batch_size: 16
+batch_size: 4
 evaluation_strategy: "epoch"
 save_strategy: "epoch"
-learning_rate: 9.3689e-06
+learning_rate: 2.356e-05
 num_train_epochs: 30
-weight_decay: 0.052
+weight_decay: 0.0969
 load_best_model_at_end: True
 metric_for_best_model: "f1"
 save_total_limit: 2
@@ -20,7 +20,7 @@ fp16: True
 label_smoothing_factor: 0.0
 
 # Inference
-threshold: 0.6
+threshold: 0.8
 
 # Dataset
 upsample: False
@@ -28,13 +28,13 @@ downsample: False
 
 # Dataset
 augmentation:
-  use: True
+  use: False
   generated_classes_indices: [2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23]
   generated_samples_path: /dhc/groups/appl_ml_ss23_1/datasets/generated/generated_tweets
 
-add_translated : False
+add_translated : True
 
-delete: False  
+delete: True  
 
 # Hydra
 hydra:
