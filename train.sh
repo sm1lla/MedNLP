@@ -1,5 +1,5 @@
 #!/bin/bash -eux
-#SBATCH --job-name=sweep
+#SBATCH --job-name=train
 #SBATCH --mail-type=END,FAIL
 #SBATCH --mail-user=smilla.fox@mattermost
 #SBATCH --partition=gpu # -p
@@ -12,4 +12,4 @@ set +eu
 conda activate mednlp
 set +eu
 
-wandb agent mednlp/MedNLP/77j94i1e
+python -m src task=train

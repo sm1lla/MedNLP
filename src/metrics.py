@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 import torch
 from sklearn.metrics import accuracy_score, classification_report, f1_score
 from transformers import EvalPrediction
@@ -23,7 +24,8 @@ def multi_label_metrics(y_pred, y_true):
     )
 
     metrics.update(sklearn_metrics)
-
+    metrics = pd.json_normalize(metrics, sep=".")
+    metrics = metrics.to_dict(orient="records")[0]
     return metrics
 
 
