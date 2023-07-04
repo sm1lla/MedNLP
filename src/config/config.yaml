@@ -1,26 +1,27 @@
 defaults:
-  - dataset:  multi-de
+  - dataset: de
   - task: ???
 #wandb args  
 use_wandb: True
-project_name: deterministic 
-run_name:  multi-de
-group_name: multilingual
+project_name: huggingface 
+run_name: None
+group_name: None
 # Training Arguments
-batch_size: 16
+batch_size: 4
 evaluation_strategy: "epoch"
 save_strategy: "epoch"
-learning_rate: 9.3689e-06
-num_train_epochs: 30
-weight_decay: 0.052
+learning_rate: 2.356e-05
+num_train_epochs: 15
+weight_decay: 0.0969
 load_best_model_at_end: True
 metric_for_best_model: "f1"
 save_total_limit: 2
 fp16: True
 label_smoothing_factor: 0.0
 
+
 # Inference
-threshold: 0.6
+threshold: 0.8
 
 # Dataset
 upsample: False
@@ -41,4 +42,4 @@ hydra:
   run:
     dir: /dhc/groups/appl_ml_ss23_1/hydra_outputs/${now:%Y-%m-%d}/${now:%H-%M-%S}
 
-deterministic: True
+deterministic: False
