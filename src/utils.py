@@ -1,9 +1,11 @@
-from omegaconf import DictConfig
-import shutil
-import wandb
 import os
-from transformers.trainer_callback import TrainerState
+import shutil
 from pathlib import Path
+
+from omegaconf import DictConfig
+from transformers.trainer_callback import TrainerState
+
+import wandb
 
 
 def configure_wandb(cfg: DictConfig):
@@ -43,29 +45,31 @@ def finish_wandb(cfg):
 def finish_wandb():
     wandb.run.finish()
 
+
 def get_last_checkpoint_name(folder):
     ckpt_dirs = os.listdir(folder)
+    ckpt_dirs = [dir for dir in ckpt_dirs if "checkpoint" in dir]
     ckpt_dirs = sorted(ckpt_dirs, key=lambda x: int(x.split("-")[1]))
     last_ckpt = ckpt_dirs[-1]
 
     return last_ckpt
+
 
 def get_best_checkpoint_path(folder):
     folder = Path(folder)
     last_ckpt = get_last_checkpoint_name(folder)
     state = TrainerState.load_from_json(folder / last_ckpt / "trainer_state.json")
 
-    return state.best_model_checkpoint    
+    return state.best_model_checkpoint
 
 
-
-def delete_checkpoints(cfg,train_folder:str=None):
+def delete_checkpoints(cfg, train_folder: str = None):
     folder = os.getcwd() if not train_folder else train_folder
 
-    checkpoint_folders = list(filter(lambda x: "checkpoint" in x,os.listdir(folder)))
+    checkpoint_folders = list(filter(lambda x: "checkpoint" in x, os.listdir(folder)))
 
     folder = Path(folder)
-    if not cfg.delete: 
+    if not cfg.delete:
         checkpoint_folders.remove(Path(get_best_checkpoint_path(folder)).name)
 
     for checkpoint_folder in checkpoint_folders:
