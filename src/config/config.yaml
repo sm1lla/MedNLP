@@ -10,18 +10,18 @@ group_name: None
 batch_size: 4
 evaluation_strategy: "epoch"
 save_strategy: "epoch"
-learning_rate: 2.356e-05
-num_train_epochs: 15
-weight_decay: 0.0969
+learning_rate: 1.477e-05
+num_train_epochs: 20
+weight_decay: 0.089
 load_best_model_at_end: True
-metric_for_best_model: "f1"
+metric_for_best_model: micro avg.f1-score"
 save_total_limit: 2
 fp16: True
 label_smoothing_factor: 0.0
 
 
 # Inference
-threshold: 0.8
+threshold: 0.4
 
 # Dataset
 upsample: False
@@ -42,4 +42,4 @@ hydra:
   run:
     dir: /dhc/groups/appl_ml_ss23_1/hydra_outputs/${now:%Y-%m-%d}/${now:%H-%M-%S}
 
-deterministic: False
+deterministic: True
