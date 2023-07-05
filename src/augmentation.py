@@ -5,7 +5,7 @@ import pandas as pd
 from datasets import Dataset, DatasetDict
 from omegaconf import DictConfig
 from sklearn.utils import shuffle
-from transformers import pipeline
+from transformers import T5ForConditionalGeneration, T5TokenizerFast, pipeline
 
 from src.helpers import drug_examples
 
@@ -41,11 +41,13 @@ def add_generated_samples(dataset, column_indices: list[int], path: str, languag
         dataset = pd.concat([dataset, dataset_generated], ignore_index=True)
 
     dataset = shuffle(dataset, random_state=42)
-    return Dataset.from_pandas(dataset)
+    dataset = Dataset.from_pandas(dataset)
+    dataset = dataset.remove_columns(["__index_level_0__"])
+    return dataset
 
 
 def add_samples_for_class(index: int, path: str, language: str, columns: list[str]):
-    dataset_generated = pd.read_csv(f"{path}_{language}_{index}.csv")
+    dataset_generated = pd.read_csv(f"{path}_de_{index}.csv")
     dataset_generated = setup_dataframe(dataset_generated, columns, column_index=index)
 
     dataset_generated = replace_placeholder(dataset_generated)
@@ -54,15 +56,30 @@ def add_samples_for_class(index: int, path: str, language: str, columns: list[st
 
 def translate(cfg: DictConfig):
     dataset = load_dataset_from_file(cfg.dataset.path)["train"]
-    translator = pipeline(cfg.task.mode, model="t5-base", device=0)
-    results = translator([cfg.task.prefix + text for text in dataset["text"]])
+    tokenizer = T5TokenizerFast.from_pretrained("t5-base", model_max_length=128)
+    model = T5ForConditionalGeneration.from_pretrained("t5-base")
+    results = []
 
-    translations = [translation["translation_text"] for translation in results]
+    for slice_index in range(0, len(dataset), cfg.task.batch_size):
+        upper_bound = slice_index + cfg.task.batch_size
+        if upper_bound > len(dataset):
+            upper_bound = len(dataset)
+        batch = dataset["text"][slice_index:upper_bound]
+
+        input = [cfg.task.prefix + text for text in batch]
+        input_ids = tokenizer(
+            input,
+            return_tensors="pt",
+            padding="max_length",
+            truncation=True,
+        ).input_ids
+        outputs = model.generate(input_ids, max_new_tokens=64)
+        results.extend(tokenizer.batch_decode(outputs, skip_special_tokens=True))
 
     dataset_pd = pd.DataFrame(dataset)
-    dataset_pd["text"] = translations
+    dataset_pd["text"] = results
 
-    dataset_pd.to_csv(cfg.task.save_path)
+    dataset_pd.to_csv(cfg.task.save_path, index=False)
 
 
 def add_translated(dataset: DatasetDict, path: str):
@@ -70,7 +87,7 @@ def add_translated(dataset: DatasetDict, path: str):
     stemmed = path.split(".")[0]
     path_translated_senteces = f"{stemmed}_translated.csv"
     translated = pd.read_csv(path_translated_senteces)
-    translated.drop("Unnamed: 0", axis=1, inplace=True)
+    translated.drop(["Unnamed: 0"], axis=1, inplace=True)
     num_rows = len(translated)
     translated["train_id"] = [float(num) for num in range(10000, 10000 + num_rows)]
     translated.rename(
@@ -78,4 +95,4 @@ def add_translated(dataset: DatasetDict, path: str):
     )
     dataset = pd.concat([dataset, translated], ignore_index=True)
     dataset = shuffle(dataset, random_state=42)
-    return Dataset.from_pandas(dataset)
+    return Dataset.from_pandas(dataset).remove_columns(["__index_level_0__"])
