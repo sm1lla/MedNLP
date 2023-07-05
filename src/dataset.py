@@ -306,7 +306,7 @@ def print_examples_for_classnames(cfg: DictConfig):
 
 def create_multilingual_dataset():
     path = "/dhc/groups/appl_ml_ss23_1/datasets"
-    version = "19_06_23"
+    version = "26_06_23"
     splits = ["train", "val", "test"]
     languages = ["de", "en", "fr", "ja"]
     for split in splits:
