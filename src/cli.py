@@ -6,6 +6,7 @@ from .dataset import examine_dataset, print_examples_for_classnames
 from .debug import debug
 from .evaluate import evaluate_model
 from .inference import infer
+from .output import save_predictions
 from .predict import predict
 from .start_ensemble import start_ensemble
 from .train import train
@@ -25,6 +26,7 @@ def cli(cfg: DictConfig):
         "examples": print_examples_for_classnames,
         "generate": generate_for_all_classes,
         "translate": translate,
+        "output": save_predictions,
     }
 
     options[cfg.task.name](cfg)
