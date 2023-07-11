@@ -1,6 +1,6 @@
 # @package _group_
 name : "output"
 
-model_path : /dhc/groups/appl_ml_ss23_1/hydra_outputs/2023-06-26/11-15-01/checkpoint-37638
+model_path : /dhc/groups/appl_ml_ss23_1/hydra_outputs/2023-07-10/14-50-22/checkpoint-26581
 output_path : /dhc/groups/appl_ml_ss23_1/output/output.csv
-dataset_path : /dhc/groups/appl_ml_ss23_1/datasets/de/ntcir17_mednlp-sc_sm_de_train_19_06_23_test_no_labels.csv
+dataset_path : /dhc/groups/appl_ml_ss23_1/datasets/de/ntcir17_mednlp-sc_sm_de_train_26_06_23_test_no_labels.csv
