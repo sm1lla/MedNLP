@@ -20,7 +20,7 @@ class WeightVoteClassifier(Classifier):
     def load_weight_list(self):
         self.validate_estimators()
         f1_scores = [
-            tupel["eval_macro avg"]["f1-score"] for tupel in self.estimator_val_metrics
+            tupel["eval_micro avg.f1-score"] for tupel in self.estimator_val_metrics
         ]
 
         indices_highest_elements = np.argsort(f1_scores, axis=0)[::-1]
