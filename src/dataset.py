@@ -114,6 +114,21 @@ def load_dataset_from_file(path):
     return dataset
 
 
+def balance_dataset(dataset: Dataset):
+    dataset = dataset.to_pandas()
+    updated = dataset.copy()
+    symptoms = dataset.columns[2:]
+    subsets = [dataset[dataset[symptom] == 1] for symptom in symptoms]
+    min_len = len(min(subsets, key=lambda x: len(x)))
+    for subset in subsets:
+        new_subset = resample(subset, replace=False, n_samples=min_len, random_state=42)
+        updated.drop(subset.index, inplace=True, errors="ignore")
+        updated = pd.concat([updated, new_subset], ignore_index=True)
+    updated.drop_duplicates(inplace=True)
+    updated = Dataset.from_pandas(updated).remove_columns(["__index_level_0__"])
+    return updated
+
+
 def upsample(dataset: Dataset):
     dataset = dataset.to_pandas()
     classes = minority_classes(dataset)
@@ -147,7 +162,7 @@ def downsample(dataset: Dataset):
         dataset = pd.concat([dataset, new_subset], ignore_index=True)
 
     updated_dataset = shuffle(dataset, random_state=42)
-    return Dataset.from_pandas(dataset)
+    return Dataset.from_pandas(updated_dataset)
 
 
 def majority_classes(dataset):
