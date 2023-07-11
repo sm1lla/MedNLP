@@ -82,17 +82,28 @@ def translate(cfg: DictConfig):
     dataset_pd.to_csv(cfg.task.save_path, index=False)
 
 
-def add_translated(dataset: DatasetDict, path: str):
+def add_translated(
+    dataset: DatasetDict,
+    path: str,
+    column_indices: list[int],
+):
     dataset = dataset.to_pandas()
     stemmed = path.split(".")[0]
     path_translated_senteces = f"{stemmed}_translated.csv"
     translated = pd.read_csv(path_translated_senteces)
-    translated.drop(["Unnamed: 0"], axis=1, inplace=True)
     num_rows = len(translated)
     translated["train_id"] = [float(num) for num in range(10000, 10000 + num_rows)]
     translated.rename(
         columns=dict(zip(translated.columns, dataset.columns)), inplace=True
     )
-    dataset = pd.concat([dataset, translated], ignore_index=True)
+
+    selected = set()
+    for column_index in column_indices:
+        for index, row in translated.iterrows():
+            if row[column_index] == 1:
+                selected.add(index)
+
+    selected_rows = translated.iloc[list(selected)]
+    dataset = pd.concat([dataset, selected_rows], ignore_index=True)
     dataset = shuffle(dataset, random_state=42)
     return Dataset.from_pandas(dataset).remove_columns(["__index_level_0__"])
