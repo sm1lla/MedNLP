@@ -1,6 +1,5 @@
 # @package _group_
 name : "translate"
-prefix : "translate English to German: "
 mode : "translation_en_to_de"
-save_path : "/dhc/groups/appl_ml_ss23_1/datasets/de/ntcir17_mednlp-sc_sm_de_train_19_06_23_translated.csv"
+save_path : "/dhc/groups/appl_ml_ss23_1/datasets/de/ntcir17_mednlp-sc_sm_de_train_26_06_23_translated.csv"
 batch_size : 64
