@@ -99,7 +99,9 @@ def train(cfg: DictConfig, dataset=None, train_folder=None):
             cfg.dataset.name,
         )
     if cfg.add_translated:
-        dataset["train"] = add_translated(dataset["train"], cfg.dataset.path)
+        dataset["train"] = add_translated(
+            dataset["train"], cfg.dataset.path, cfg.translated_classes_indices
+        )
 
     labels = [
         label
