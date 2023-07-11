@@ -2,4 +2,4 @@
 
 name: ja
 path: /dhc/groups/appl_ml_ss23_1/datasets/ja/ntcir17_mednlp-sc_sm_ja_train_26_06_23.csv
-pretrained_model: cl-tohoku/bert-base-japanese-whole-word-masking
+pretrained_model: xlm-roberta-large

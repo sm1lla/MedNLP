@@ -1,5 +1,7 @@
 import os
 from pathlib import Path
+import numpy as np 
+import sys
 
 from hydra.utils import get_original_cwd
 from omegaconf import DictConfig, OmegaConf
@@ -27,6 +29,16 @@ def get_default_estimators(cfg: DictConfig, modelInfo: str, datasets: list):
 
     return learners
 
+def get_seed_estimators(cfg: DictConfig, modelInfo: str, datasets: list):
+    learners = []
+
+    for num, dataset in zip(range(1, cfg.task.ensemble_size + 1), datasets):
+        cfg.seed=np.random.randint(2**32 - 1)
+        model = estimator(name=modelInfo + str(num), cfg=cfg, dataset=dataset)
+        learners.append(model)
+
+    return learners
+
 
 def get_multilingual_estimators(cfg: DictConfig, modelInfo: str, datasets: list):
     # ignore datasets
@@ -39,25 +51,28 @@ def get_multilingual_estimators(cfg: DictConfig, modelInfo: str, datasets: list)
         1: "en",
         2: "ja",
         3: "fr",
+        4: "multi"
     }
+
+    
     ensemble_size = cfg.task.ensemble_size - (
-        cfg.task.ensemble_size % 4
+        cfg.task.ensemble_size % len(language)
     )  # we want for every language at least one
-    if ensemble_size < 4 and (ensemble_size % 4) != 0:
+    if ensemble_size < len(language) and (ensemble_size % len(language)) != 0:
         raise Exception(
             "Multilingual Ensemble does not fulfill requirements (ensemble size should be at least languages size and dividable by it)"
         )
     cfg.task.ensemble_size = ensemble_size
 
     for num in range(ensemble_size):
-        dataset_config_name = language[num % 4] + ".yaml"
+        dataset_config_name = language[num % len(language)] + ".yaml"
         dataset_config_path = config_directory / dataset_config_name
         cfg.dataset = OmegaConf.load(dataset_config_path)
 
         dataset = load_dataset_from_file(cfg.dataset.path)
 
         model = estimator(
-            name=modelInfo + language[num % 4] + str(num + 1), cfg=cfg, dataset=dataset
+            name=modelInfo + language[num % len(language)] + str(num + 1), cfg=cfg, dataset=dataset
         )
         learners.append(model)
 
@@ -75,6 +90,7 @@ dataset_technique = {
 estimator_technique = {
     "default": get_default_estimators,
     "multilingual": get_multilingual_estimators,
+    "seed": get_seed_estimators
 }
 
 
@@ -82,12 +98,12 @@ def start_ensemble(cfg: DictConfig):
     cfg.run_name = "" if cfg.run_name == "None" else cfg.run_name
     modelInfo = (
         str(cfg.task.ensemble_size)
-        + cfg.task.ensemble_technique
-        + cfg.task.ensemble_technique
+        + (cfg.task.dataset_technique + cfg.dataset.name.upper() if cfg.task.estimator_technique != "multilingual" else cfg.task.dataset_technique)
+        + (cfg.task.estimator_technique if cfg.task.estimator_technique != "default" else "")
         + cfg.run_name
     )
 
-    datasets = dataset_technique[cfg.task.ensemble_technique](cfg)
+    datasets = dataset_technique[cfg.task.dataset_technique](cfg)
 
     if cfg.task.ensemble_path == "None":
         cfg.task.ensemble_path = os.getcwd()
@@ -98,7 +114,7 @@ def start_ensemble(cfg: DictConfig):
         cfg, modelInfo, datasets
     )
 
-    voter_name = str(cfg.task.ensemble_size) + cfg.task.ensemble_technique
+    voter_name = str(cfg.task.ensemble_size) + cfg.task.dataset_technique
 
     voter = MajorityVoteClassifier(
         estimators, cfg.project_name, voter_name, cfg.group_name, cfg.use_wandb

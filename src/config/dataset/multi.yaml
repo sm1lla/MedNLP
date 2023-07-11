@@ -2,4 +2,4 @@
 
 name: multi
 path: /dhc/groups/appl_ml_ss23_1/datasets/multi/ntcir17_mednlp-sc_sm_multi_train_26_06_23.csv
-pretrained_model: bert-base-multilingual-cased
+pretrained_model: xlm-roberta-large

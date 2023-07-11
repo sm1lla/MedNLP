@@ -8,4 +8,4 @@ model_path: "placeholder"
 ensemble_size: 5
 do_train: False
 estimator_technique: default
-ensemble_technique: ??? # kfoldCross
+dataset_technique: ??? # kfoldCross

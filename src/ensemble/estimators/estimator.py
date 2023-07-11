@@ -24,7 +24,7 @@ class estimator:
         self.cfg.run_name = self.name
         self.dataset = dataset
         self.folder = Path(cfg.task.ensemble_path) / self.name
-        if cfg.task.do_train is not True:
+        if cfg.task.do_train != True:
             self.cfg.task.model_path = get_best_checkpoint_path(self.folder)
         else:
             self.cfg.task.model_path = self.folder
