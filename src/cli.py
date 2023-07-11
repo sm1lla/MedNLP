@@ -5,6 +5,7 @@ from .augmentation import translate
 from .dataset import examine_dataset, print_examples_for_classnames
 from .debug import debug
 from .evaluate import evaluate_model
+from .evaluateWandb import evaluate_wandb_run
 from .inference import infer
 from .output import save_predictions
 from .predict import predict
@@ -21,6 +22,7 @@ def cli(cfg: DictConfig):
         "predict": predict,
         "dataset": examine_dataset,
         "evaluate": evaluate_model,
+        "evaluateWandb": evaluate_wandb_run,
         "debug": debug,
         "ensemble": start_ensemble,
         "examples": print_examples_for_classnames,
