@@ -5,7 +5,7 @@ import pandas as pd
 from datasets import Dataset, DatasetDict
 from omegaconf import DictConfig
 from sklearn.utils import shuffle
-from transformers import T5ForConditionalGeneration, T5TokenizerFast, pipeline
+from transformers import AutoModelForSeq2SeqLM, AutoTokenizer
 
 from src.helpers import drug_examples
 
@@ -32,12 +32,15 @@ def replace_placeholder(dataset_generated: pd.DataFrame):
     return dataset_generated
 
 
-def add_generated_samples(dataset, column_indices: list[int], path: str, language: str):
+def add_generated_samples(
+    dataset, column_indices: list[int], path: str, language: str, fraction: float = 1.0
+):
     dataset = dataset.to_pandas()
     for column_index in column_indices:
         dataset_generated = add_samples_for_class(
             column_index, path, language, list(dataset.columns)
         )
+        dataset_generated = dataset_generated.sample(frac=fraction, random_state=42)
         dataset = pd.concat([dataset, dataset_generated], ignore_index=True)
 
     dataset = shuffle(dataset, random_state=42)
@@ -56,8 +59,8 @@ def add_samples_for_class(index: int, path: str, language: str, columns: list[st
 
 def translate(cfg: DictConfig):
     dataset = load_dataset_from_file(cfg.dataset.path)["train"]
-    tokenizer = T5TokenizerFast.from_pretrained("t5-base", model_max_length=128)
-    model = T5ForConditionalGeneration.from_pretrained("t5-base")
+    tokenizer = AutoTokenizer.from_pretrained("Helsinki-NLP/opus-mt-en-de")
+    model = AutoModelForSeq2SeqLM.from_pretrained("Helsinki-NLP/opus-mt-en-de")
     results = []
 
     for slice_index in range(0, len(dataset), cfg.task.batch_size):
@@ -66,9 +69,8 @@ def translate(cfg: DictConfig):
             upper_bound = len(dataset)
         batch = dataset["text"][slice_index:upper_bound]
 
-        input = [cfg.task.prefix + text for text in batch]
         input_ids = tokenizer(
-            input,
+            batch,
             return_tensors="pt",
             padding="max_length",
             truncation=True,
