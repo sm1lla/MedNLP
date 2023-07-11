@@ -150,7 +150,7 @@ def train(cfg: DictConfig, dataset=None, train_folder=None):
     )
 
     trainer.train()
-    test_evaluation = trainer.evaluate(encoded_dataset["val"])
+    test_evaluation = trainer.evaluate(encoded_dataset["test"])
     wandb.log(add_section_to_metric_log("test", test_evaluation, "eval_"))
     delete_checkpoints(
         cfg=cfg, train_folder=os.getcwd() if not train_folder else train_folder
