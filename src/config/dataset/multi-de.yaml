@@ -2,4 +2,4 @@
 
 name: multi-de
 path: /dhc/groups/appl_ml_ss23_1/datasets/multi-de/ntcir17_mednlp-sc_sm_multi-de_train_26_06_23.csv
-pretrained_model: bert-base-multilingual-cased
+pretrained_model: xlm-roberta-large
