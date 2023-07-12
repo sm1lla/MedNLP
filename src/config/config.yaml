@@ -34,7 +34,7 @@ augmentation:
   generated_classes_indices: [2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23]
   generated_samples_path: /dhc/groups/appl_ml_ss23_1/datasets/generated/generated_tweets
 
-add_translated : True
+add_translated : False
 translated_classes_indices: [19, 10, 21]
 
 delete: False  
