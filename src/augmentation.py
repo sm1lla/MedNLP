@@ -1,4 +1,5 @@
 import random
+import re
 
 import numpy as np
 import pandas as pd
@@ -31,7 +32,7 @@ def setup_dataframe(new_dataset: pd.DataFrame, columns: list[str], column_index:
 
 def replace_placeholder(dataset_generated: pd.DataFrame):
     dataset_generated["text"] = [
-        text.replace("[Medikamentenname]", random.sample(drug_examples(), 1)[0])
+        re.sub("\[[\w\s]+\]", random.sample(drug_examples(), 1)[0], text)
         for text in dataset_generated["text"]
     ]
     return dataset_generated
@@ -55,7 +56,9 @@ def add_generated_samples(
 
 
 def add_samples_for_class(index: int, path: str, language: str, columns: list[str]):
-    dataset_generated = pd.read_csv(f"{path}_de_{index}.csv")
+    dataset_generated = pd.read_csv(
+        f"{path}/{language}/generated_tweets_{language}_{index}.csv"
+    )
     dataset_generated = setup_dataframe(dataset_generated, columns, column_index=index)
 
     dataset_generated = replace_placeholder(dataset_generated)
@@ -63,41 +66,51 @@ def add_samples_for_class(index: int, path: str, language: str, columns: list[st
 
 
 def translate(cfg: DictConfig):
-    dataset = load_dataset("csv", data_files={"train": cfg.task.input_path})["train"]
-    dataset_pd = pd.DataFrame(dataset)
-    if not cfg.task.use_t5:
-        tokenizer = AutoTokenizer.from_pretrained(cfg.task.model_name)
-        model = AutoModelForSeq2SeqLM.from_pretrained(cfg.task.model_name)
-    else:
-        tokenizer = T5Tokenizer.from_pretrained("t5-base")
-        model = T5ForConditionalGeneration.from_pretrained("t5-base")
-        dataset_pd["text"] = [cfg.task.prefix + text for text in dataset["text"]]
+    input_path = cfg.task.input_path
+    output_path = cfg.task.save_path
+    for id in range(2, 24):
+        input_path = re.split("\d+\.", input_path)[0]
+        input_path = f"{input_path}{id}.csv"
+        output_path = re.split("\d+\.", output_path)[0]
+        output_path = f"{output_path}{id}.csv"
 
-    results = []
+        dataset = load_dataset("csv", data_files={"train": input_path})["train"]
+        dataset_pd = pd.DataFrame(dataset)
+        if not cfg.task.use_t5:
+            tokenizer = AutoTokenizer.from_pretrained(cfg.task.model_name)
+            model = AutoModelForSeq2SeqLM.from_pretrained(cfg.task.model_name)
+        else:
+            tokenizer = T5Tokenizer.from_pretrained("t5-base")
+            model = T5ForConditionalGeneration.from_pretrained("t5-base")
+            dataset_pd["text"] = [cfg.task.prefix + text for text in dataset["text"]]
 
-    for text in dataset_pd["text"]:
-        splits = text.split(".")
-        splits = [
-            split
-            for split in splits
-            if len("".join(x for x in split if x.isalpha())) > 1
-        ]
+        results = []
 
-        input_ids = tokenizer(
-            splits,
-            return_tensors="pt",
-            padding="longest",
-            truncation=True,
-        ).input_ids
-        outputs = model.generate(input_ids, max_new_tokens=128)
-        decoded_outputs = tokenizer.batch_decode(outputs, skip_special_tokens=True)
-        decoded_outputs = [string + ". " for string in decoded_outputs]
-        output = "".join(decoded_outputs)
-        results.append(output)
+        for text in dataset_pd["text"]:
+            splits = text.split(".")
+            splits = [
+                split
+                for split in splits
+                if len("".join(x for x in split if x.isalpha())) > 1
+            ]
 
-    dataset_pd["text"] = results
+            input_ids = tokenizer(
+                splits,
+                return_tensors="pt",
+                padding="longest",
+                truncation=True,
+            ).input_ids
+            outputs = model.generate(input_ids, max_new_tokens=128)
+            decoded_outputs = tokenizer.batch_decode(outputs, skip_special_tokens=True)
+            decoded_outputs = [string + ". " for string in decoded_outputs]
+            output = "".join(decoded_outputs)
+            results.append(output)
 
-    dataset_pd.to_csv(cfg.task.save_path, index=False)
+        dataset_pd["text"] = results
+
+        print(id)
+
+        dataset_pd.to_csv(output_path, index=False)
 
 
 def add_translated(
