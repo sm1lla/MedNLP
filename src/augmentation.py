@@ -2,10 +2,15 @@ import random
 
 import numpy as np
 import pandas as pd
-from datasets import Dataset, DatasetDict
+from datasets import Dataset, DatasetDict, load_dataset
 from omegaconf import DictConfig
 from sklearn.utils import shuffle
-from transformers import AutoModelForSeq2SeqLM, AutoTokenizer
+from transformers import (
+    AutoModelForSeq2SeqLM,
+    AutoTokenizer,
+    T5ForConditionalGeneration,
+    T5Tokenizer,
+)
 
 from src.helpers import drug_examples
 
@@ -58,27 +63,38 @@ def add_samples_for_class(index: int, path: str, language: str, columns: list[st
 
 
 def translate(cfg: DictConfig):
-    dataset = load_dataset_from_file(cfg.dataset.path)["train"]
-    tokenizer = AutoTokenizer.from_pretrained("Helsinki-NLP/opus-mt-en-de")
-    model = AutoModelForSeq2SeqLM.from_pretrained("Helsinki-NLP/opus-mt-en-de")
+    dataset = load_dataset("csv", data_files={"train": cfg.task.input_path})["train"]
+    dataset_pd = pd.DataFrame(dataset)
+    if not cfg.task.use_t5:
+        tokenizer = AutoTokenizer.from_pretrained(cfg.task.model_name)
+        model = AutoModelForSeq2SeqLM.from_pretrained(cfg.task.model_name)
+    else:
+        tokenizer = T5Tokenizer.from_pretrained("t5-base")
+        model = T5ForConditionalGeneration.from_pretrained("t5-base")
+        dataset_pd["text"] = [cfg.task.prefix + text for text in dataset["text"]]
+
     results = []
 
-    for slice_index in range(0, len(dataset), cfg.task.batch_size):
-        upper_bound = slice_index + cfg.task.batch_size
-        if upper_bound > len(dataset):
-            upper_bound = len(dataset)
-        batch = dataset["text"][slice_index:upper_bound]
+    for text in dataset_pd["text"]:
+        splits = text.split(".")
+        splits = [
+            split
+            for split in splits
+            if len("".join(x for x in split if x.isalpha())) > 1
+        ]
 
         input_ids = tokenizer(
-            batch,
+            splits,
             return_tensors="pt",
-            padding="max_length",
+            padding="longest",
             truncation=True,
         ).input_ids
-        outputs = model.generate(input_ids, max_new_tokens=64)
-        results.extend(tokenizer.batch_decode(outputs, skip_special_tokens=True))
+        outputs = model.generate(input_ids, max_new_tokens=128)
+        decoded_outputs = tokenizer.batch_decode(outputs, skip_special_tokens=True)
+        decoded_outputs = [string + ". " for string in decoded_outputs]
+        output = "".join(decoded_outputs)
+        results.append(output)
 
-    dataset_pd = pd.DataFrame(dataset)
     dataset_pd["text"] = results
 
     dataset_pd.to_csv(cfg.task.save_path, index=False)
