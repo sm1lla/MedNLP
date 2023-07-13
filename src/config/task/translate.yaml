@@ -1,5 +1,8 @@
 # @package _group_
 name : "translate"
-mode : "translation_en_to_de"
-save_path : "/dhc/groups/appl_ml_ss23_1/datasets/de/ntcir17_mednlp-sc_sm_de_train_26_06_23_translated.csv"
-batch_size : 64
+use_t5 : False
+model_name : Helsinki-NLP/opus-mt-de-en
+input_path : "/dhc/groups/appl_ml_ss23_1/datasets/generated/generated_tweets_de_2.csv"
+save_path : "/dhc/groups/appl_ml_ss23_1/datasets/generated/en/generated_tweets_en_2.csv"
+batch_size : 8
+prefix : "translate German to English: "
