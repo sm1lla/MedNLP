@@ -28,7 +28,7 @@ def get_class_labels(dataset=None):
         labels = [
             label
             for label in dataset["train"].features.keys()
-            if label not in ["train_id", "text"]
+            if label not in ["train_id", "text", "test_id"]
         ]
         return labels
 
