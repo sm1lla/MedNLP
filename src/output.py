@@ -13,25 +13,9 @@ from .preprocessing import tokenize
 from .train import initialize_trainer
 
 
-def add_columns(dataframe: pd.DataFrame, columns: list[str]):
-    for column in columns:
-        dataframe[column] = 0
-    return dataframe
-
-
 def save_predictions(cfg: DictConfig):
-    # get class labels from training dataset
-    class_labels = get_class_labels(load_dataset_from_file(cfg.dataset.path))
-
     # prepare dataframe
     test_dataset_df = pd.read_csv(cfg.task.dataset_path)
-    test_dataset_df.drop(columns=["Unnamed: 0"], inplace=True)
-    trainer: Trainer = initialize_trainer(cfg)
-
-    test_dataset_df = add_columns(
-        test_dataset_df,
-        columns=class_labels,
-    )
 
     # tokenize
     tokenizer = AutoTokenizer.from_pretrained(Path(cfg.task.model_path))
@@ -39,6 +23,12 @@ def save_predictions(cfg: DictConfig):
     test_dataset_dict = DatasetDict(
         {"train": test_dataset, "val": test_dataset, "test": test_dataset}
     )
+
+    trainer: Trainer = initialize_trainer(cfg, dataset=test_dataset_dict)
+
+    # get class labels from training dataset
+    class_labels = get_class_labels(test_dataset_dict)
+
     encoded_dataset = tokenize(
         test_dataset_dict, labels=class_labels, tokenizer=tokenizer
     )
