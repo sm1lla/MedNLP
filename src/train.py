@@ -4,7 +4,7 @@ from pathlib import Path
 
 import numpy as np
 import torch
-from datasets import DatasetDict
+from datasets import DatasetDict, concatenate_datasets
 from omegaconf import DictConfig
 from transformers import (
     AutoModelForSequenceClassification,
@@ -86,6 +86,7 @@ def train(cfg: DictConfig, dataset=None, train_folder=None):
 
     if dataset == None:
         dataset = load_dataset_from_file(cfg.dataset.path)
+        dataset["train"] = concatenate_datasets([dataset["train"], dataset["test"]])
 
     if cfg.upsample:
         dataset["train"] = upsample(dataset["train"])
@@ -138,7 +139,7 @@ def train(cfg: DictConfig, dataset=None, train_folder=None):
         report_to="wandb" if cfg.use_wandb else None,
         fp16=cfg.fp16,
         label_smoothing_factor=cfg.label_smoothing_factor,
-        seed=cfg.seed
+        seed=cfg.seed,
     )
 
     trainer = Trainer(
